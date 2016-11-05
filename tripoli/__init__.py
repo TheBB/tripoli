@@ -1,4 +1,4 @@
 import emacs
 
-print('hello from tripoli')
+obj = emacs.intern('lel')
 emacs.message('hello from tripoli')
