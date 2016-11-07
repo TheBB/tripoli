@@ -29,12 +29,12 @@ int EmacsObject_bool(PyObject *self)
 PyObject *EmacsObject_int(PyObject *self)
 {
     emacs_value val = ((EmacsObject *)self)->val;
-    if (em_type_is(val, "integer")) {
+    if (em_integerp(val)) {
         intmax_t integer = em_extract_int(val);
         Py_ssize_t pyint = Py_SAFE_DOWNCAST(integer, intmax_t, Py_ssize_t);
         return PyLong_FromSsize_t(pyint);
     }
-    else if (em_type_is(val, "float")) {
+    else if (em_floatp(val)) {
         double dbl = em_extract_float(val);
         return PyLong_FromDouble(dbl);
     }
@@ -45,11 +45,11 @@ PyObject *EmacsObject_int(PyObject *self)
 PyObject *EmacsObject_float(PyObject *self)
 {
     emacs_value val = ((EmacsObject *)self)->val;
-    if (em_type_is(val, "integer")) {
+    if (em_integerp(val)) {
         intmax_t integer = em_extract_int(val);
         return PyFloat_FromDouble((double)integer);
     }
-    else if (em_type_is(val, "float")) {
+    else if (em_floatp(val)) {
         double dbl = em_extract_float(val);
         return PyLong_FromDouble(dbl);
     }
@@ -78,11 +78,7 @@ PyObject *EmacsObject_call(PyObject *self, PyObject *args, PyObject *kwds)
 PyObject *EmacsObject_str(PyObject *self)
 {
     emacs_value obj = ((EmacsObject *)self)->val;
-    char *str;
-    if (em_type_is(obj, "string"))
-        str = em_extract_str(obj);
-    else
-        str = em_print_obj(obj);
+    char *str = em_stringp(obj) ? em_extract_str(obj) : em_print_obj(obj);
     PyObject *ret = PyUnicode_FromString(str);
     free(str);
     return ret;
@@ -117,29 +113,22 @@ PyObject *EmacsObject_is_a(PyObject *self, PyObject *args)
     Py_RETURN_FALSE;
 }
 
-#define EMACSOBJECT_IS(pytype, emtype) \
+#define EMACSOBJECT_IS(pytype, predicate) \
     PyObject *EmacsObject_is_ ## pytype(PyObject *self) \
     { \
         emacs_value obj = ((EmacsObject *)self)->val; \
-        if (em_type_is(obj, #emtype)) \
+        if (em_ ## predicate(obj)) \
             Py_RETURN_TRUE; \
         Py_RETURN_FALSE; \
     }
 
-EMACSOBJECT_IS(int, integer)
-EMACSOBJECT_IS(float, float)
-EMACSOBJECT_IS(str, string)
-EMACSOBJECT_IS(symbol, symbol)
-EMACSOBJECT_IS(cons, cons)
-EMACSOBJECT_IS(vector, vector)
-
-PyObject *EmacsObject_is_list(PyObject *self)
-{
-    emacs_value obj = ((EmacsObject *)self)->val;
-    if (em_listp(obj))
-        Py_RETURN_TRUE;
-    Py_RETURN_FALSE;
-}
+EMACSOBJECT_IS(int, integerp)
+EMACSOBJECT_IS(float, floatp)
+EMACSOBJECT_IS(str, stringp)
+EMACSOBJECT_IS(symbol, symbolp)
+EMACSOBJECT_IS(cons, consp)
+EMACSOBJECT_IS(vector, vectorp)
+EMACSOBJECT_IS(list, listp)
 
 #define METHOD(name, args) \
     {#name, (PyCFunction)EmacsObject_ ## name, METH_ ## args, __doc_EmacsObject_ ## name}

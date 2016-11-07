@@ -10,7 +10,7 @@ static emacs_value import_module(emacs_env *env, ptrdiff_t nargs, emacs_value *a
     set_environment(env);
 
     emacs_value em_name = args[0];
-    if (!em_type_is(em_name, "string"))
+    if (!em_stringp(em_name))
         return em_intern("nil");
     ptrdiff_t size;
     env->copy_string_contents(env, em_name, NULL, &size);

@@ -86,11 +86,20 @@ bool em_null(emacs_value val)
     return !env->is_not_nil(env, val);
 }
 
-bool em_listp(emacs_value val)
-{
-    emacs_value listp = em_intern("listp");
-    return !em_null(em_funcall(listp, 1, &val));
-}
+#define PREDICATE(name) \
+    bool em_ ## name(emacs_value val) \
+    { \
+        emacs_value pred = em_intern(#name); \
+        return !em_null(em_funcall(pred, 1, &val)); \
+    }
+
+PREDICATE(integerp)
+PREDICATE(floatp)
+PREDICATE(stringp)
+PREDICATE(symbolp)
+PREDICATE(consp)
+PREDICATE(vectorp)
+PREDICATE(listp)
 
 void set_environment(emacs_env *__env)
 {

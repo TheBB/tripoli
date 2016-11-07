@@ -107,7 +107,37 @@ bool em_type_is(emacs_value val, char *type);
 bool em_null(emacs_value val);
 
 /**
- * \brief Check whether an Emacs object is a list (cons or nil).
+ * \brief Check whether an Emacs object is an integer.
+ */
+bool em_integerp(emacs_value val);
+
+/**
+ * \brief Check whether an Emacs object is a float.
+ */
+bool em_floatp(emacs_value val);
+
+/**
+ * \brief Check whether an Emacs object is a string.
+ */
+bool em_stringp(emacs_value val);
+
+/**
+ * \brief Check whether an Emacs object is a symbol.
+ */
+bool em_symbolp(emacs_value val);
+
+/**
+ * \brief Check whether an Emacs object is a cons cell.
+ */
+bool em_consp(emacs_value val);
+
+/**
+ * \brief Check whether an Emacs object is a vector.
+ */
+bool em_vectorp(emacs_value val);
+
+/**
+ * \brief Check whether an Emacs object is a list (cons cell or nil).
  */
 bool em_listp(emacs_value val);
 
