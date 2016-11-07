@@ -51,7 +51,7 @@ PyObject *EmacsObject_float(PyObject *self)
     }
     else if (em_floatp(val)) {
         double dbl = em_extract_float(val);
-        return PyLong_FromDouble(dbl);
+        return PyFloat_FromDouble(dbl);
     }
     PyErr_SetString(PyExc_TypeError, "Incompatible Emacs object type");
     return NULL;
