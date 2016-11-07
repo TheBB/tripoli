@@ -129,6 +129,7 @@ EMACSOBJECT_IS(symbol, symbolp)
 EMACSOBJECT_IS(cons, consp)
 EMACSOBJECT_IS(vector, vectorp)
 EMACSOBJECT_IS(list, listp)
+EMACSOBJECT_IS(callable, functionp)
 
 #define METHOD(name, args) \
     {#name, (PyCFunction)EmacsObject_ ## name, METH_ ## args, __doc_EmacsObject_ ## name}
@@ -143,6 +144,7 @@ PyMethodDef EmacsObject_methods[] = {
     METHOD(is_cons, NOARGS),
     METHOD(is_vector, NOARGS),
     METHOD(is_list, NOARGS),
+    METHOD(is_callable, NOARGS),
     {NULL},
 };
 

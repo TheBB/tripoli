@@ -80,6 +80,12 @@ DOCSTRING(EmacsObject_is_list,
           "Equivalent to (listp obj) in elisp.");
 PyObject *EmacsObject_is_list(PyObject *self);
 
+DOCSTRING(EmacsObject_is_callable,
+          "obj.is_callable()\n\n"
+          "Check whether the object is callable.\n\n"
+          "Equivalent to (functionp obj) in elisp.");
+PyObject *EmacsObject_is_callable(PyObject *self);
+
 PyTypeObject EmacsObjectType;
 
 #endif /* EMACSOBJECT_H */

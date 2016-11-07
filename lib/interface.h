@@ -141,6 +141,11 @@ bool em_vectorp(emacs_value val);
  */
 bool em_listp(emacs_value val);
 
+/**
+ * \brief Check whether an Emacs object is a function (callable).
+ */
+bool em_functionp(emacs_value val);
+
 
 // Other functions
 

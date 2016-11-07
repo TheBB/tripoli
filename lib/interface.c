@@ -100,6 +100,7 @@ PREDICATE(symbolp)
 PREDICATE(consp)
 PREDICATE(vectorp)
 PREDICATE(listp)
+PREDICATE(functionp)
 
 void set_environment(emacs_env *__env)
 {
