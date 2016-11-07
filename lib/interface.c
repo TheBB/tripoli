@@ -19,13 +19,6 @@ void em_provide(char *feature_name)
     env->funcall(env, provide_fcn, 1, args);
 }
 
-void em_message(char *msg)
-{
-    emacs_value message_fcn = em_intern("message");
-    emacs_value args[] = {env->make_string(env, msg, strlen(msg))};
-    env->funcall(env, message_fcn, 1, args);
-}
-
 emacs_value em_intern(char *name)
 {
     return env->intern(env, name);

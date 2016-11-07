@@ -77,15 +77,6 @@ PyTypeObject EmacsObjectType = {
     EmacsObject_new,
 };
 
-PyObject *py_message(PyObject *self, PyObject *args)
-{
-    char *msg;
-    if (!PyArg_ParseTuple(args, "s", &msg))
-        return NULL;
-    em_message(msg);
-    Py_RETURN_NONE;
-}
-
 PyObject *py_intern(PyObject *self, PyObject *args)
 {
     char *name;

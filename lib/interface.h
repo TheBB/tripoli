@@ -5,7 +5,6 @@
 
 void set_environment(emacs_env *env);
 void em_provide(char *feature_name);
-void em_message(char *msg);
 
 emacs_value em_intern(char *name);
 emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args);
