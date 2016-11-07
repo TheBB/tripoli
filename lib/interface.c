@@ -48,6 +48,11 @@ emacs_value em_str(char *str)
     return env->make_string(env, str, strlen(str));
 }
 
+emacs_value em_make_function(em_func func, ptrdiff_t min_nargs, ptrdiff_t max_nargs, void *data)
+{
+    return env->make_function(env, min_nargs, max_nargs, func, "", data);
+}
+
 bool em_null(emacs_value val)
 {
     return !env->is_not_nil(env, val);

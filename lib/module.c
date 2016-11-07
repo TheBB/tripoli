@@ -95,9 +95,46 @@ PyObject *py_str(PyObject *self, PyObject *args)
     return py_emacsobject(&EmacsObjectType, ret);
 }
 
+emacs_value call_func(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data)
+{
+    set_environment(env);
+    PyObject *function = (PyObject *)data;
+    PyObject *arglist = PyTuple_New(nargs);
+    for (size_t i = 0; i < nargs; i++) {
+        PyObject *arg = py_emacsobject(&EmacsObjectType, args[i]);
+        PyTuple_SetItem(arglist, i, arg);
+    }
+    PyObject *py_ret = PyObject_CallObject(function, arglist);
+    if (py_ret == Py_None) {
+        return em_intern("nil");
+    }
+    else if (!PyObject_TypeCheck(py_ret, &EmacsObjectType)) {
+        PyErr_SetString(PyExc_TypeError, "Return value must be an Emacs object or None");
+        return NULL;
+    }
+    emacs_value ret = ((EmacsObject *)py_ret)->val;
+    return ret;
+}
+
+PyObject *py_make_function(PyObject *self, PyObject *args)
+{
+    PyObject *fcn;
+    int min_nargs, max_nargs;
+    if (!PyArg_ParseTuple(args, "Oii", &fcn, &min_nargs, &max_nargs))
+        return NULL;
+    if (!PyCallable_Check(fcn)) {
+        PyErr_SetString(PyExc_TypeError, "Parameter must be callable");
+        return NULL;
+    }
+    Py_XINCREF(fcn);
+    emacs_value func = em_make_function(call_func, min_nargs, max_nargs, fcn);
+    return py_emacsobject(&EmacsObjectType, func);
+}
+
 PyMethodDef methods[] = {
     {"intern", py_intern, METH_VARARGS, ""},
     {"str", py_str, METH_VARARGS, ""},
+    {"make_function", py_make_function, METH_VARARGS, ""},
     {NULL},
 };
 
