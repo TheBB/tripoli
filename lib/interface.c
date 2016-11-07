@@ -81,16 +81,16 @@ bool em_type_is(emacs_value val, char *type)
     return ret;
 }
 
-bool em_null(emacs_value val)
+bool em_truthy(emacs_value val)
 {
-    return !env->is_not_nil(env, val);
+    return env->is_not_nil(env, val);
 }
 
 #define PREDICATE(name) \
     bool em_ ## name(emacs_value val) \
     { \
         emacs_value pred = em_intern(#name); \
-        return !em_null(em_funcall(pred, 1, &val)); \
+        return em_truthy(em_funcall(pred, 1, &val)); \
     }
 
 PREDICATE(integerp)

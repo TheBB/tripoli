@@ -102,9 +102,9 @@ bool em_type_is(emacs_value val, char *type);
 // Predicates
 
 /**
- * \brief Check whether an Emacs object is nil.
+ * \brief Check whether an Emacs object is truthy (not nil).
  */
-bool em_null(emacs_value val);
+bool em_truthy(emacs_value val);
 
 /**
  * \brief Check whether an Emacs object is an integer.

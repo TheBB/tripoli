@@ -23,7 +23,7 @@ PyObject *EmacsObject_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 int EmacsObject_bool(PyObject *self)
 {
     emacs_value val = ((EmacsObject *)self)->val;
-    return !em_null(val);
+    return em_truthy(val);
 }
 
 PyObject *EmacsObject_int(PyObject *self)
