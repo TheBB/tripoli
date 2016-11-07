@@ -24,11 +24,6 @@ emacs_value em_intern(char *name)
     return env->intern(env, name);
 }
 
-bool em_null(emacs_value val)
-{
-    return !env->is_not_nil(env, val);
-}
-
 emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args)
 {
     return env->funcall(env, func, nargs, args);
@@ -51,4 +46,15 @@ char *em_print_obj(emacs_value obj)
 emacs_value em_str(char *str)
 {
     return env->make_string(env, str, strlen(str));
+}
+
+bool em_null(emacs_value val)
+{
+    return !env->is_not_nil(env, val);
+}
+
+bool em_stringp(emacs_value val)
+{
+    emacs_value stringp_fcn = em_intern("stringp");
+    return !em_null(env->funcall(env, stringp_fcn, 1, &val));
 }
