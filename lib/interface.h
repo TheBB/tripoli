@@ -9,6 +9,7 @@ void em_message(char *msg);
 
 emacs_value em_intern(char *name);
 emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args);
+char *em_print_obj(emacs_value obj);
 
 bool em_null(emacs_value val);
 

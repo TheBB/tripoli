@@ -45,6 +45,15 @@ PyObject *EmacsObject_call(PyObject *self, PyObject *args, PyObject *kwds)
     return py_emacsobject(&EmacsObjectType, ret);
 }
 
+PyObject *EmacsObject_str(PyObject *self)
+{
+    emacs_value obj = ((EmacsObject *)self)->val;
+    char *str = em_print_obj(obj);
+    PyObject *ret = PyUnicode_FromString(str);
+    free(str);
+    return ret;
+}
+
 static PyNumberMethods EmacsObject_NumMethods[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0,
     (inquiry)EmacsObject_bool,
@@ -60,7 +69,8 @@ PyTypeObject EmacsObjectType = {
     EmacsObject_NumMethods,
     0, 0, 0,
     EmacsObject_call,
-    0, 0, 0, 0,
+    EmacsObject_str,
+    0, 0, 0,
     Py_TPFLAGS_DEFAULT,
     "Emacs object",
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
