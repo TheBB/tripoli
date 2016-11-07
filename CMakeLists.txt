@@ -9,7 +9,7 @@ endif()
 
 find_package(PythonLibs 3.2 REQUIRED)
 
-add_library(tripoli SHARED lib/main.c lib/interface.c lib/module.c)
+add_library(tripoli SHARED lib/main.c lib/interface.c lib/module.c lib/EmacsObject.c)
 set_property(TARGET tripoli PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(tripoli PRIVATE
   ${EMACS_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/lib)

@@ -3,16 +3,14 @@
 
 #include "module.h"
 #include "interface.h"
+#include "main.h"
 
-int plugin_is_GPL_compatible;
-
-
-emacs_value import_module(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data)
+static emacs_value import_module(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data)
 {
     set_environment(env);
 
     emacs_value em_name = args[0];
-    if (!em_stringp(em_name))
+    if (!em_type_is(em_name, "string"))
         return em_intern("nil");
     ptrdiff_t size;
     env->copy_string_contents(env, em_name, NULL, &size);
@@ -27,7 +25,6 @@ emacs_value import_module(emacs_env *env, ptrdiff_t nargs, emacs_value *args, vo
     return em_intern("t");
 }
 
-
 int emacs_module_init(struct emacs_runtime *ert)
 {
     set_environment(ert->get_environment(ert));
@@ -36,14 +33,11 @@ int emacs_module_init(struct emacs_runtime *ert)
     PyImport_AppendInittab("emacs", &PyInit_emacs);
     Py_Initialize();
 
-    emacs_env *env = ert->get_environment(ert);
-
-    emacs_value fset_fcn = em_intern("fset");
+    emacs_value fset = em_intern("fset");
     emacs_value tripoli_import = em_intern("tripoli-import");
-    emacs_value import_fcn = env->make_function(
-        env, 1, 1, import_module, "Import a Python module via Tripoli", NULL);
-    emacs_value args[] = {tripoli_import, import_fcn};
-    env->funcall(env, fset_fcn, 2, args);
+    emacs_value import = em_function(import_module, 1, 1, __doc_import_module, NULL);
+    emacs_value args[] = {tripoli_import, import};
+    em_funcall(fset, 2, args);
 
     em_provide("libtripoli");
 

@@ -24,7 +24,7 @@ try:
     string = emacs.str('Tripoli successfully loaded')
     message(string)
 
-    func = emacs.make_function(hello, 0, 0)
+    func = emacs.function(hello, 0, 0)
     hello = emacs.intern('hello')
     fset = emacs.intern('fset')
     fset(hello, func)

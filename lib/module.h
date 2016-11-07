@@ -4,20 +4,13 @@
 #ifndef MODULE_H
 #define MODULE_H
 
-typedef struct {
-    PyObject_HEAD
-    emacs_value val;
-} EmacsObject;
+emacs_value call_func(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data);
 
-PyTypeObject EmacsObjectType;
-
-PyObject *py_emacsobject(PyTypeObject *type, emacs_value val);
-void EmacsObject_dealloc(EmacsObject *self);
-PyObject *EmacsObject_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
-int EmacsObject_bool(PyObject *self);
-
-PyObject *py_message(PyObject *self, PyObject *args);
 PyObject *py_intern(PyObject *self, PyObject *args);
+PyObject *py_str(PyObject *self, PyObject *args);
+PyObject *py_int(PyObject *self, PyObject *args);
+PyObject *py_float(PyObject *self, PyObject *args);
+PyObject *py_function(PyObject *self, PyObject *args);
 
 PyObject *PyInit_emacs();
 
