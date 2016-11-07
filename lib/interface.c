@@ -54,3 +54,8 @@ char *em_print_obj(emacs_value obj)
     env->copy_string_contents(env, ret, buffer, &size);
     return buffer;
 }
+
+emacs_value em_str(char *str)
+{
+    return env->make_string(env, str, strlen(str));
+}

@@ -11,7 +11,9 @@ try:
     obj = cons(a, b)
     assert str(obj) == '(a . b)'
 
-    emacs.message('Tripoli successfully loaded')
+    message = emacs.intern('message')
+    string = emacs.str('Tripoli successfully loaded')
+    message(string)
 except Exception as e:
     print('{}: {}'.format(e.__class__.__name__, e))
 

@@ -95,9 +95,18 @@ PyObject *py_intern(PyObject *self, PyObject *args)
     return py_emacsobject(&EmacsObjectType, sym);
 }
 
+PyObject *py_str(PyObject *self, PyObject *args)
+{
+    char *str;
+    if (!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+    emacs_value ret = em_str(str);
+    return py_emacsobject(&EmacsObjectType, ret);
+}
+
 PyMethodDef methods[] = {
-    {"message", py_message, METH_VARARGS, ""},
     {"intern", py_intern, METH_VARARGS, ""},
+    {"str", py_str, METH_VARARGS, ""},
     {NULL},
 };
 
