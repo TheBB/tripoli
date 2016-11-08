@@ -12,7 +12,7 @@ def main():
         args.insert(1, '--batch')
         args.extend(['--eval', '(tripoli-import "tripoli_test")',
                      '--eval', '(kill-emacs)'])
-    run(args)
+    run(args, check=True)
 
 if __name__ == '__main__':
     main()

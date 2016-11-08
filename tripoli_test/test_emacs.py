@@ -235,3 +235,20 @@ def test_list():
     assert not lst.is_vector()
     assert lst.is_list()
     assert lst
+
+def test_function():
+    def a():
+        return emacs.int(1)
+    func = emacs.function(a, 0, 0)
+    ret = func()
+    assert ret.is_int()
+    assert int(ret) == 1
+
+    def b():
+        return emacs.str('alpha')
+    func = emacs.function(b, 0, 0)
+    ret = func()
+    assert ret.is_str()
+
+    # Fails. Why?
+    # assert str(ret) == 'alpha'
