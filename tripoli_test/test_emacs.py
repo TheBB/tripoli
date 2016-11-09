@@ -277,8 +277,6 @@ def test_function():
     assert str(ret) == 'alpha'
 
 def test_error():
-    car = emacs.intern('car')
-
     error = emacs.intern('error')
     msg = emacs.str('An error message')
     with pytest.raises(emacs.Signal) as e:
@@ -299,3 +297,16 @@ def test_error():
     assert str(sym) == 'tag'
     assert data.is_int()
     assert int(data) == 1
+
+    def err():
+        error = emacs.intern('error')
+        list = emacs.intern('list')
+        raise emacs.Signal(error, list(emacs.str('message')))
+    func = emacs.function(err, 0, 0)
+    with pytest.raises(emacs.Signal) as e:
+        func()
+    sym, data = e.value.args
+    assert sym.is_symbol()
+    assert str(sym) == 'error'
+    assert data.is_list()
+    assert str(data) == '("message")'

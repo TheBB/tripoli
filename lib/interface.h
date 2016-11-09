@@ -183,7 +183,7 @@ bool em_listp(emacs_value val);
 bool em_functionp(emacs_value val);
 
 
-// Other functions
+// Function calling and error reporting
 
 /**
  * \brief Call a function.
@@ -211,6 +211,24 @@ emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args,
  * \return Function return value.
  */
 emacs_value em_funcall_naive(emacs_value func, int nargs, emacs_value *args);
+
+/**
+ * \brief Signal a non-local exit.
+ */
+void em_signal(emacs_value symbol, emacs_value data);
+
+/**
+ * \brief Throw a non-local exit.
+ */
+void em_throw(emacs_value symbol, emacs_value data);
+
+/**
+ * \brief Signal an error.
+ */
+void em_error(char *message);
+
+
+// Other functions
 
 /**
  * \brief Returns the printed representation of an Emacs object.

@@ -132,6 +132,24 @@ emacs_value em_funcall_naive(emacs_value func, int nargs, emacs_value *args)
     return em_funcall(func, nargs, args, NULL, NULL, NULL);
 }
 
+void em_signal(emacs_value symbol, emacs_value data)
+{
+    env->non_local_exit_signal(env, symbol, data);
+}
+
+void em_throw(emacs_value symbol, emacs_value data)
+{
+    env->non_local_exit_throw(env, symbol, data);
+}
+
+void em_error(char *message)
+{
+    emacs_value list = em_intern("list");
+    emacs_value emsg = em_str(message);
+    emacs_value data = em_funcall_naive(list, 1, &emsg);
+    em_signal(em_intern("error"), data);
+}
+
 char *em_print_obj(emacs_value obj)
 {
     emacs_value format_fcn = em_intern("format");
