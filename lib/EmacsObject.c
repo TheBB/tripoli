@@ -38,6 +38,12 @@ PyObject *EmacsObject_int(PyObject *self)
         double dbl = em_extract_float(val);
         return PyLong_FromDouble(dbl);
     }
+    else if (em_stringp(val)) {
+        char *str = em_extract_str(val);
+        PyObject *ret = PyLong_FromString(str, NULL, 10);
+        free(str);
+        return ret;
+    }
     PyErr_SetString(PyExc_TypeError, "Incompatible Emacs object type");
     return NULL;
 }
@@ -52,6 +58,16 @@ PyObject *EmacsObject_float(PyObject *self)
     else if (em_floatp(val)) {
         double dbl = em_extract_float(val);
         return PyFloat_FromDouble(dbl);
+    }
+    else if (em_stringp(val)) {
+        char *str = em_extract_str(val);
+        PyObject *pystr = PyUnicode_FromString(str);
+        free(str);
+        if (pystr) {
+            PyObject *ret = PyFloat_FromString(pystr);
+            Py_DECREF(pystr);
+            return ret;
+        }
     }
     PyErr_SetString(PyExc_TypeError, "Incompatible Emacs object type");
     return NULL;

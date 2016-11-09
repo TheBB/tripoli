@@ -128,9 +128,9 @@ def test_string():
     alpha = emacs.str('alpha')
     assert repr(alpha) == '"alpha"'
     assert str(alpha) == 'alpha'
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         int(alpha)
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         float(alpha)
     assert alpha.type() == 'string'
     assert alpha.is_a('string')
@@ -148,6 +148,14 @@ def test_string():
         emacs.str(2)
     with pytest.raises(TypeError):
         emacs.str(1.1)
+
+    s_one = emacs.str('1')
+    i_one = int(s_one)
+    assert i_one == 1
+
+    s_two = emacs.str('2.2')
+    f_two = float(s_two)
+    assert f_two == 2.2
 
 def test_cons():
     cons = emacs.intern('cons')
