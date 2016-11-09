@@ -275,3 +275,27 @@ def test_function():
     ret = func()
     assert ret.is_str()
     assert str(ret) == 'alpha'
+
+def test_error():
+    car = emacs.intern('car')
+
+    error = emacs.intern('error')
+    msg = emacs.str('An error message')
+    with pytest.raises(emacs.Signal) as e:
+        error(msg)
+    sym, data = e.value.args
+    assert sym.is_symbol()
+    assert str(sym) == 'error'
+    assert data.is_list()
+    assert str(data) == '("An error message")'
+
+    throw = emacs.intern('throw')
+    tag = emacs.intern('tag')
+    value = emacs.int(1)
+    with pytest.raises(emacs.Throw) as e:
+        throw(tag, value)
+    sym, data = e.value.args
+    assert sym.is_symbol()
+    assert str(sym) == 'tag'
+    assert data.is_int()
+    assert int(data) == 1

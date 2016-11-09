@@ -12,6 +12,9 @@ PyObject *py_int(PyObject *self, PyObject *args);
 PyObject *py_float(PyObject *self, PyObject *args);
 PyObject *py_function(PyObject *self, PyObject *args);
 
+extern PyObject *EmacsSignal;
+extern PyObject *EmacsThrow;
+
 PyObject *PyInit_emacs();
 
 #endif /* MODULE_H */

@@ -21,7 +21,7 @@ void em_provide(char *feature_name)
 {
     emacs_value provide = em_intern("provide");
     emacs_value feature = em_intern(feature_name);
-    em_funcall(provide, 1, &feature);
+    em_funcall_naive(provide, 1, &feature);
 }
 
 emacs_value em_intern(char *name)
@@ -53,7 +53,7 @@ emacs_value em_function(em_func func, ptrdiff_t min_nargs, ptrdiff_t max_nargs,
 char *em_symbol_name(emacs_value val)
 {
     emacs_value symbol_name = em_intern("symbol-name");
-    emacs_value name = em_funcall(symbol_name, 1, &val);
+    emacs_value name = em_funcall_naive(symbol_name, 1, &val);
     return em_extract_str(name);
 }
 
@@ -79,7 +79,7 @@ double em_extract_float(emacs_value val)
 char *em_type_as_str(emacs_value val)
 {
     emacs_value type_of = em_intern("type-of");
-    emacs_value symbol = em_funcall(type_of, 1, &val);
+    emacs_value symbol = em_funcall_naive(type_of, 1, &val);
     return em_symbol_name(symbol);
 }
 
@@ -100,7 +100,7 @@ bool em_truthy(emacs_value val)
     bool em_ ## name(emacs_value val) \
     { \
         emacs_value pred = em_intern(#name); \
-        return em_truthy(em_funcall(pred, 1, &val)); \
+        return em_truthy(em_funcall_naive(pred, 1, &val)); \
     }
 
 PREDICATE(integerp)
@@ -112,9 +112,24 @@ PREDICATE(vectorp)
 PREDICATE(listp)
 PREDICATE(functionp)
 
-emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args)
+emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args,
+                       enum emacs_funcall_exit *exit_signal,
+                       emacs_value *exit_symbol, emacs_value *exit_data)
 {
-    return env->funcall(env, func, nargs, args);
+    emacs_value ret = env->funcall(env, func, nargs, args);
+    if (exit_signal) {
+        *exit_signal = env->non_local_exit_check(env);
+        if (*exit_signal) {
+            env->non_local_exit_get(env, exit_symbol, exit_data);
+            env->non_local_exit_clear(env);
+        }
+    }
+    return ret;
+}
+
+emacs_value em_funcall_naive(emacs_value func, int nargs, emacs_value *args)
+{
+    return em_funcall(func, nargs, args, NULL, NULL, NULL);
 }
 
 char *em_print_obj(emacs_value obj)
@@ -122,6 +137,6 @@ char *em_print_obj(emacs_value obj)
     emacs_value format_fcn = em_intern("format");
     emacs_value fmt_str = env->make_string(env, "%S", 2);
     emacs_value args[] = {fmt_str, obj};
-    emacs_value ret = em_funcall(format_fcn, 2, args);
+    emacs_value ret = em_funcall_naive(format_fcn, 2, args);
     return em_extract_str(ret);
 }

@@ -95,6 +95,9 @@ PyModuleDef module = {
     PyModuleDef_HEAD_INIT, "emacs", NULL, -1, methods, NULL, NULL, NULL, NULL
 };
 
+PyObject *EmacsSignal = NULL;
+PyObject *EmacsThrow = NULL;
+
 PyObject *PyInit_emacs()
 {
     PyObject *m = PyModule_Create(&module);
@@ -104,6 +107,14 @@ PyObject *PyInit_emacs()
 
     Py_INCREF(&EmacsObjectType);
     PyModule_AddObject(m, "EmacsObject", (PyObject *)&EmacsObjectType);
+
+    EmacsSignal = PyErr_NewException("emacs.Signal", NULL, NULL);
+    Py_INCREF(EmacsSignal);
+    PyModule_AddObject(m, "Signal", EmacsSignal);
+
+    EmacsThrow = PyErr_NewException("emacs.Throw", NULL, NULL);
+    Py_INCREF(EmacsThrow);
+    PyModule_AddObject(m, "Throw", EmacsThrow);
 
     return m;
 }

@@ -1,6 +1,3 @@
-# from . import test_emacs
-# test_emacs.test_function()
-
 try:
     # Check that we are running embedded
     import emacs

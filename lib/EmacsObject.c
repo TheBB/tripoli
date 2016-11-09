@@ -1,6 +1,7 @@
 #include <Python.h>
 
 #include "interface.h"
+#include "module.h"
 #include "EmacsObject.h"
 
 
@@ -87,7 +88,18 @@ PyObject *EmacsObject_call(PyObject *self, PyObject *args, PyObject *kwds)
         e_arglist[i] = ((EmacsObject *)arg)->val;
     }
     int ilen = Py_SAFE_DOWNCAST(len, Py_ssize_t, int);
-    emacs_value ret = em_funcall(func, ilen, e_arglist);
+
+    enum emacs_funcall_exit signal;
+    emacs_value ret, symbol, data;
+    ret = em_funcall(func, ilen, e_arglist, &signal, &symbol, &data);
+
+    if (signal) {
+        PyObject *type = (signal == emacs_funcall_exit_signal) ? EmacsSignal : EmacsThrow;
+        PyObject *args = Py_BuildValue("(NN)", emacs_object(symbol), emacs_object(data));
+        PyErr_SetObject(type, args);
+        return NULL;
+    }
+
     return emacs_object(ret);
 }
 

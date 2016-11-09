@@ -37,7 +37,7 @@ int emacs_module_init(struct emacs_runtime *ert)
     emacs_value tripoli_import = em_intern("tripoli-import");
     emacs_value import = em_function(import_module, 1, 1, __doc_import_module, NULL);
     emacs_value args[] = {tripoli_import, import};
-    em_funcall(fset, 2, args);
+    em_funcall_naive(fset, 2, args);
 
     em_provide("libtripoli");
 
