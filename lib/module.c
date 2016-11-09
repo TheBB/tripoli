@@ -4,6 +4,90 @@
 #include "interface.h"
 #include "EmacsObject.h"
 
+bool propagate_python_error()
+{
+    // Catch all exceptions
+    // PyErr_Fetch steals the references and clears the error indicator
+    PyObject *etype, *eval, *etb;
+    PyErr_Fetch(&etype, &eval, &etb);
+    if (etype) {
+        PyObject *args = PyObject_GetAttrString(eval, "args");
+        PyObject *pys, *pyd;
+        char *msg;
+
+        // If the exception is of type EmacsSignal or EmacsThrow, and was raised
+        // with two arguments, both of which are Emacs objects, we can signal or
+        // throw a corresponding non-local exit in Emacs
+        if ((etype == EmacsSignal || etype == EmacsThrow)
+            && PyObject_TypeCheck(args, &PyTuple_Type)
+            && PyTuple_Size(args) >= 2
+            && (pys = PyTuple_GetItem(args, 0))
+            && PyObject_TypeCheck(pys, &EmacsObjectType)
+            && (pyd = PyTuple_GetItem(args, 1))
+            && PyObject_TypeCheck(pyd, &EmacsObjectType))
+        {
+            emacs_value symbol = ((EmacsObject *)pys)->val;
+            emacs_value data = ((EmacsObject *)pyd)->val;
+            if (etype == EmacsSignal)
+                em_signal(symbol, data);
+            else if (etype == EmacsThrow)
+                em_throw(symbol, data);
+            Py_DECREF(etype);
+            Py_DECREF(eval);
+            Py_DECREF(etb);
+            return true;
+        }
+
+        // Otherwise, simply signal an error, with the error message equal to
+        // the exception argument, if any
+        if (!PyArg_ParseTuple(args, "s", &msg))
+            msg = "An unknown error occured";
+        em_error(msg);
+
+        Py_DECREF(etype);
+        Py_DECREF(eval);
+        Py_DECREF(etb);
+        return true;
+    }
+
+    return false;
+}
+
+emacs_value call_func(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data)
+{
+    SET_ENV(env);
+
+    PyObject *function = (PyObject *)data;
+    PyObject *arglist = PyTuple_New(nargs);
+    for (size_t i = 0; i < nargs; i++) {
+        PyObject *arg = emacs_object(args[i]);
+        PyTuple_SetItem(arglist, i, arg);
+    }
+
+    PyObject *py_ret = PyObject_CallObject(function, arglist);
+
+    // Check the error indicator
+    if (propagate_python_error()) {
+        UNSET_ENV();
+        return NULL;
+    }
+
+    // The return value must be an Emacs object, but we allow ourselves the
+    // convenience of mapping None to nil
+    if (py_ret == Py_None) {
+        UNSET_ENV();
+        return em_intern("nil");
+    }
+    else if (!PyObject_TypeCheck(py_ret, &EmacsObjectType)) {
+        em_error("Function failed to return a valid Emacs object");
+        UNSET_ENV();
+        return NULL;
+    }
+
+    emacs_value ret = ((EmacsObject *)py_ret)->val;
+    UNSET_ENV();
+    return ret;
+}
 
 PyObject *py_intern(PyObject *self, PyObject *args)
 {
@@ -41,82 +125,6 @@ PyObject *py_float(PyObject *self, PyObject *args)
     return emacs_object(ret);
 }
 
-emacs_value call_func(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data)
-{
-    SET_ENV(env);
-
-    PyObject *function = (PyObject *)data;
-    PyObject *arglist = PyTuple_New(nargs);
-    for (size_t i = 0; i < nargs; i++) {
-        PyObject *arg = emacs_object(args[i]);
-        PyTuple_SetItem(arglist, i, arg);
-    }
-
-    PyObject *py_ret = PyObject_CallObject(function, arglist);
-
-    // Catch all exceptions
-    // PyErr_Fetch steals the references and clears the error indicator
-    PyObject *etype, *eval, *etb;
-    PyErr_Fetch(&etype, &eval, &etb);
-    if (etype) {
-        PyObject *args = PyObject_GetAttrString(eval, "args");
-        PyObject *pys, *pyd;
-        char *msg;
-
-        // If the exception is of type EmacsSignal or EmacsThrow, and was raised
-        // with two arguments, both of which are Emacs objects, we can signal or
-        // throw a corresponding non-local exit in Emacs
-        if ((etype == EmacsSignal || etype == EmacsThrow)
-            && PyObject_TypeCheck(args, &PyTuple_Type)
-            && PyTuple_Size(args) >= 2
-            && (pys = PyTuple_GetItem(args, 0))
-            && PyObject_TypeCheck(pys, &EmacsObjectType)
-            && (pyd = PyTuple_GetItem(args, 1))
-            && PyObject_TypeCheck(pyd, &EmacsObjectType))
-        {
-            emacs_value symbol = ((EmacsObject *)pys)->val;
-            emacs_value data = ((EmacsObject *)pyd)->val;
-            if (etype == EmacsSignal)
-                em_signal(symbol, data);
-            else if (etype == EmacsThrow)
-                em_throw(symbol, data);
-            Py_DECREF(etype);
-            Py_DECREF(eval);
-            Py_DECREF(etb);
-            UNSET_ENV();
-            return NULL;
-        }
-
-        // Otherwise, simply signal an error, with the error message equal to
-        // the exception argument, if any
-        if (!PyArg_ParseTuple(args, "s", &msg))
-            msg = "An unknown error occured";
-        em_error(msg);
-
-        Py_DECREF(etype);
-        Py_DECREF(eval);
-        Py_DECREF(etb);
-        UNSET_ENV();
-        return NULL;
-    }
-
-    // The return value must be an Emacs object, but we allow ourselves the
-    // convenience of mapping None to nil
-    if (py_ret == Py_None) {
-        UNSET_ENV();
-        return em_intern("nil");
-    }
-    else if (!PyObject_TypeCheck(py_ret, &EmacsObjectType)) {
-        em_error("Function failed to return a valid Emacs object");
-        UNSET_ENV();
-        return NULL;
-    }
-
-    emacs_value ret = ((EmacsObject *)py_ret)->val;
-    UNSET_ENV();
-    return ret;
-}
-
 PyObject *py_function(PyObject *self, PyObject *args)
 {
     PyObject *fcn;
@@ -132,14 +140,19 @@ PyObject *py_function(PyObject *self, PyObject *args)
     return emacs_object(func);
 }
 
+#define METHOD(name, args)                                              \
+    {#name, py_ ## name, METH_ ## args, __doc_py_ ## name}
+
 PyMethodDef methods[] = {
-    {"intern", py_intern, METH_VARARGS, ""},
-    {"str", py_str, METH_VARARGS, ""},
-    {"int", py_int, METH_VARARGS, ""},
-    {"float", py_float, METH_VARARGS, ""},
-    {"function", py_function, METH_VARARGS, ""},
+    METHOD(intern, VARARGS),
+    METHOD(str, VARARGS),
+    METHOD(int, VARARGS),
+    METHOD(float, VARARGS),
+    METHOD(function, VARARGS),
     {NULL},
 };
+
+#undef METHOD
 
 PyModuleDef module = {
     PyModuleDef_HEAD_INIT, "emacs", NULL, -1, methods, NULL, NULL, NULL, NULL

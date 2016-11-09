@@ -1,6 +1,7 @@
 #include <emacs-module.h>
 #include <Python.h>
 
+#include "EmacsObject.h"
 #include "module.h"
 #include "interface.h"
 #include "main.h"
@@ -19,8 +20,20 @@ static emacs_value import_module(emacs_env *env, ptrdiff_t nargs, emacs_value *a
 
     PyObject *module = PyImport_ImportModule(name);
     free(name);
-    emacs_value ret = module ? em_intern("t") : em_intern("nil");
 
+    if (!module) {
+        em_error("Failed to import module");
+        UNSET_ENV();
+        return NULL;
+    }
+
+    // Check the error indicator
+    if (propagate_python_error()) {
+        UNSET_ENV();
+        return NULL;
+    }
+
+    emacs_value ret = module ? em_intern("t") : em_intern("nil");
     UNSET_ENV();
     return ret;
 }

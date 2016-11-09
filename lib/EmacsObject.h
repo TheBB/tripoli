@@ -41,37 +41,37 @@ PyObject *EmacsObject_is_a(PyObject *self, PyObject *args);
 DOCSTRING(EmacsObject_is_int,
           "obj.is_int()\n\n"
           "Check whether the object is an integer.\n\n"
-          "Equivalent to (eq 'integer (type-of obj)) in elisp.");
+          "Equivalent to (integerp obj) in elisp.");
 PyObject *EmacsObject_is_int(PyObject *self);
 
 DOCSTRING(EmacsObject_is_float,
           "obj.is_float()\n\n"
           "Check whether the object is a float.\n\n"
-          "Equivalent to (eq 'float (type-of obj)) in elisp.");
+          "Equivalent to (floatp obj) in elisp.");
 PyObject *EmacsObject_is_float(PyObject *self);
 
 DOCSTRING(EmacsObject_is_str,
           "obj.is_str()\n\n"
           "Check whether the object is a string.\n\n"
-          "Equivalent to (eq 'string (type-of obj)) in elisp.");
+          "Equivalent to (stringp obj) in elisp.");
 PyObject *EmacsObject_is_str(PyObject *self);
 
 DOCSTRING(EmacsObject_is_symbol,
           "obj.is_symbol()\n\n"
           "Check whether the object is a symbol.\n\n"
-          "Equivalent to (eq 'symbol (type-of obj)) in elisp.");
+          "Equivalent to (symbolp obj) in elisp.");
 PyObject *EmacsObject_is_symbol(PyObject *self);
 
 DOCSTRING(EmacsObject_is_cons,
           "obj.is_cons()\n\n"
           "Check whether the object is a cons cell.\n\n"
-          "Equivalent to (eq 'cons (type-of obj)) in elisp.");
+          "Equivalent to (consp obj) in elisp.");
 PyObject *EmacsObject_is_cons(PyObject *self);
 
 DOCSTRING(EmacsObject_is_vector,
           "obj.is_vector()\n\n"
           "Check whether the object is a vector.\n\n"
-          "Equivalent to (eq 'vector (type-of obj)) in elisp.");
+          "Equivalent to (vectorp obj) in elisp.");
 PyObject *EmacsObject_is_vector(PyObject *self);
 
 DOCSTRING(EmacsObject_is_list,

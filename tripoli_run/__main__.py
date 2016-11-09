@@ -10,7 +10,7 @@ def main():
     args = ['emacs', '-q', '-L', tripoli_path, '-l', 'libtripoli']
     if '--test' in sys.argv:
         args.insert(1, '--batch')
-        args.extend(['--eval', '(tripoli-import "tripoli_test")',
+        args.extend(['--eval', '(tripoli-import "tripoli_tests")',
                      '--eval', '(kill-emacs)'])
     run(args, check=True)
 

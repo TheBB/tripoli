@@ -159,6 +159,8 @@ EMACSOBJECT_IS(vector, vectorp)
 EMACSOBJECT_IS(list, listp)
 EMACSOBJECT_IS(callable, functionp)
 
+#undef EMACSOBJECT_IS
+
 #define METHOD(name, args) \
     {#name, (PyCFunction)EmacsObject_ ## name, METH_ ## args, __doc_EmacsObject_ ## name}
 
@@ -175,6 +177,8 @@ PyMethodDef EmacsObject_methods[] = {
     METHOD(is_callable, NOARGS),
     {NULL},
 };
+
+#undef METHOD
 
 static PyNumberMethods EmacsObject_NumMethods[] = {
     0,                                // nb_add
