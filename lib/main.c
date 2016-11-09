@@ -7,7 +7,7 @@
 
 static emacs_value import_module(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data)
 {
-    set_environment(env);
+    SET_ENV(env);
 
     emacs_value em_name = args[0];
     if (!em_stringp(em_name))
@@ -19,15 +19,15 @@ static emacs_value import_module(emacs_env *env, ptrdiff_t nargs, emacs_value *a
 
     PyObject *module = PyImport_ImportModule(name);
     free(name);
-    if (!module)
-        return em_intern("nil");
+    emacs_value ret = module ? em_intern("t") : em_intern("nil");
 
-    return em_intern("t");
+    UNSET_ENV();
+    return ret;
 }
 
 int emacs_module_init(struct emacs_runtime *ert)
 {
-    set_environment(ert->get_environment(ert));
+    SET_ENV(ert->get_environment(ert));
 
     Py_SetProgramName((wchar_t *)"Tripoli");
     PyImport_AppendInittab("emacs", &PyInit_emacs);
@@ -41,5 +41,6 @@ int emacs_module_init(struct emacs_runtime *ert)
 
     em_provide("libtripoli");
 
+    UNSET_ENV();
     return 0;
 }

@@ -11,6 +11,42 @@
 typedef emacs_value (*em_func) (emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *);
 
 
+// Environment management
+
+/**
+ * \brief Set the Emacs environment.
+ *
+ * Do not use this function directly, instead use the SET_ENV macro.
+ */
+void set_environment(emacs_env *env);
+
+/**
+ * \brief Return the current Emacs environment.
+ */
+emacs_env *get_environment();
+
+/**
+ * \brief Set the Emacs environment.
+ *
+ * This macro stores the current environment in a temporary variable, and it can
+ * (and MUST) be restored before the functione exist using UNSET_ENV().
+ *
+ * In any function that receives a new Emacs environment, this macro MUST be
+ * called before querying the Emacs runtime (in other words, calling any
+ * function in the em_ namespace.)
+ */
+#define SET_ENV(env) emacs_env *__tmp = get_environment(); set_environment(env)
+
+/**
+ * \brief Restore the previous Emacs environment.
+ *
+ * In any function that receives a new Emacs environment (and, therefore, any
+ * function which has called SET_ENV), this macro MUST be called before
+ * returning.
+ */
+#define UNSET_ENV() set_environment(__tmp)
+
+
 // Convenience functions
 
 /**
@@ -148,14 +184,6 @@ bool em_functionp(emacs_value val);
 
 
 // Other functions
-
-/**
- * \brief Set the Emacs environment.
- *
- * This function must be called whenever a new environment is available, before
- * any other `em_`-functions can be used.
- */
-void set_environment(emacs_env *env);
 
 /**
  * \brief Call a function.

@@ -18,6 +18,7 @@ def test_nil():
     assert not nil.is_cons()
     assert not nil.is_vector()
     assert nil.is_list()
+    assert not nil.is_callable()
     assert not nil
 
 def test_intern():
@@ -37,6 +38,7 @@ def test_intern():
     assert not alpha.is_cons()
     assert not alpha.is_vector()
     assert not alpha.is_list()
+    assert not alpha.is_callable()
     assert alpha
 
     with pytest.raises(TypeError):
@@ -59,6 +61,7 @@ def test_int():
     assert not one.is_cons()
     assert not one.is_vector()
     assert not one.is_list()
+    assert not one.is_callable()
     assert one
 
     zero = emacs.int(0)
@@ -75,6 +78,7 @@ def test_int():
     assert not zero.is_cons()
     assert not zero.is_vector()
     assert not zero.is_list()
+    assert not zero.is_callable()
     assert zero
 
     with pytest.raises(TypeError):
@@ -97,6 +101,7 @@ def test_float():
     assert not one.is_cons()
     assert not one.is_vector()
     assert not one.is_list()
+    assert not one.is_callable()
     assert one
 
     zero = emacs.float(0)
@@ -113,6 +118,7 @@ def test_float():
     assert not zero.is_cons()
     assert not zero.is_vector()
     assert not zero.is_list()
+    assert not zero.is_callable()
     assert zero
 
     with pytest.raises(TypeError):
@@ -135,6 +141,7 @@ def test_string():
     assert not alpha.is_cons()
     assert not alpha.is_vector()
     assert not alpha.is_list()
+    assert not alpha.is_callable()
     assert alpha
 
     with pytest.raises(TypeError):
@@ -144,6 +151,7 @@ def test_string():
 
 def test_cons():
     cons = emacs.intern('cons')
+    assert cons.is_callable()
     a = emacs.intern('a')
     b = emacs.intern('b')
     c = emacs.intern('c')
@@ -167,6 +175,7 @@ def test_cons():
     assert cell.is_cons()
     assert not cell.is_vector()
     assert cell.is_list()
+    assert not cell.is_callable()
     assert cell
 
     assert repr(lst) == '(a b c)'
@@ -184,10 +193,12 @@ def test_cons():
     assert lst.is_cons()
     assert not lst.is_vector()
     assert lst.is_list()
+    assert not lst.is_callable()
     assert lst
 
 def test_vector():
     vector = emacs.intern('vector')
+    assert vector.is_callable()
     a = emacs.intern('a')
     b = emacs.intern('b')
     c = emacs.intern('c')
@@ -209,10 +220,12 @@ def test_vector():
     assert not vec.is_cons()
     assert vec.is_vector()
     assert not vec.is_list()
+    assert not vec.is_callable()
     assert vec
 
 def test_list():
     list = emacs.intern('list')
+    assert list.is_callable()
     a = emacs.intern('a')
     b = emacs.intern('b')
     c = emacs.intern('c')
@@ -234,21 +247,23 @@ def test_list():
     assert lst.is_cons()
     assert not lst.is_vector()
     assert lst.is_list()
+    assert not lst.is_callable()
     assert lst
 
 def test_function():
     def a():
         return emacs.int(1)
     func = emacs.function(a, 0, 0)
+    assert func.is_callable()
     ret = func()
+    assert str(ret) == '1'
     assert ret.is_int()
     assert int(ret) == 1
 
     def b():
         return emacs.str('alpha')
     func = emacs.function(b, 0, 0)
+    assert func.is_callable()
     ret = func()
     assert ret.is_str()
-
-    # Fails. Why?
-    # assert str(ret) == 'alpha'
+    assert str(ret) == 'alpha'

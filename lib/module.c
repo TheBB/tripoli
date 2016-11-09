@@ -43,7 +43,8 @@ PyObject *py_float(PyObject *self, PyObject *args)
 
 emacs_value call_func(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data)
 {
-    set_environment(env);
+    SET_ENV(env);
+
     PyObject *function = (PyObject *)data;
     PyObject *arglist = PyTuple_New(nargs);
     for (size_t i = 0; i < nargs; i++) {
@@ -52,13 +53,17 @@ emacs_value call_func(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *
     }
     PyObject *py_ret = PyObject_CallObject(function, arglist);
     if (py_ret == Py_None) {
+        UNSET_ENV();
         return em_intern("nil");
     }
     else if (!PyObject_TypeCheck(py_ret, &EmacsObjectType)) {
         PyErr_SetString(PyExc_TypeError, "Return value must be an Emacs object or None");
+        UNSET_ENV();
         return NULL;
     }
+
     emacs_value ret = ((EmacsObject *)py_ret)->val;
+    UNSET_ENV();
     return ret;
 }
 

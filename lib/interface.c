@@ -5,7 +5,17 @@
 #include "interface.h"
 
 
-static emacs_env *env;
+static emacs_env *env = NULL;
+
+void set_environment(emacs_env *__env)
+{
+    env = __env;
+}
+
+emacs_env *get_environment()
+{
+    return env;
+}
 
 void em_provide(char *feature_name)
 {
@@ -101,11 +111,6 @@ PREDICATE(consp)
 PREDICATE(vectorp)
 PREDICATE(listp)
 PREDICATE(functionp)
-
-void set_environment(emacs_env *__env)
-{
-    env = __env;
-}
 
 emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args)
 {
