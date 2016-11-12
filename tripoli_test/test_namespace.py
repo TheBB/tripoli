@@ -1,3 +1,5 @@
+import tripoli
+
 import emacs_raw as e
 import pytest
 from tripoli.namespace import EmacsNamespace
@@ -49,19 +51,6 @@ def test_custom_seps():
     doff = loff.ding.seps_('$').doff
     assert set(doff.symbols_(**a)) == {'loff~ding$doff', 'loff^ding$doff'}
 
-def test_v_f():
-    # Dinstinguishing between functions and variables,
-    # package-initialize is a function, and package--initialized is a variable
-    require = e.intern('require')
-    require(e.intern('package'))
-
-    assert root.package.initialize.s_.is_callable()
-    root.package._initialized.s_
-    with pytest.raises(NameError):
-        root.package.v_.initialize.s_
-    with pytest.raises(NameError):
-        root.f_.package._initialized.s_
-
 def test_import():
     import emacs
     assert isinstance(emacs, EmacsNamespace)
@@ -73,7 +62,7 @@ def test_import():
     import emacs.rofl as rofl
     assert set(rofl.symbols_(**a)) == {'rofl'}
 
-    import emacs.v_.a.b as ab
+    import emacs.a.b as ab
     assert set(ab.symbols_(**a)) == {'a-b', 'a/b', 'a:b', 'a|b'}
 
     import emacs.raw_ as raw
