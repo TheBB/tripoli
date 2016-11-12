@@ -1,10 +1,9 @@
-import tripoli
-
 import pytest
+
 import emacs.raw_ as e
 import emacs
-
 from tripoli import UnboundSymbolError
+
 
 def test_funcall():
     sym = emacs.intern(e.str('hello'))
@@ -14,6 +13,7 @@ def test_funcall():
 
     with pytest.raises(UnboundSymbolError):
         emacs.no_such_function()
+
 
 def test_assign():
     value = e.intern('symbol-value')

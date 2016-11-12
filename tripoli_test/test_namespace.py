@@ -1,11 +1,12 @@
-import tripoli
+import pytest
 
 import emacs_raw as e
-import pytest
 from tripoli.namespace import EmacsNamespace
+
 
 root = EmacsNamespace()
 a = {'convert': False}
+
 
 def test_basic():
     assert set(root.package.symbols_(**a)) == {'package'}
@@ -28,6 +29,7 @@ def test_basic():
         'a|b-c', 'a|b/c', 'a|b:c', 'a|b|c',
     }
 
+
 def test_index():
     spacemacs = root.spacemacs
     assert set(spacemacs['--'].symbols_(**a)) == {'spacemacs--'}
@@ -43,6 +45,7 @@ def test_index():
         'spacemacs//with:underscore', 'spacemacs//with|underscore',
     }
 
+
 def test_custom_seps():
     loff = root.loff.seps_('~^')
     assert set(loff.ding.symbols_(**a)) == {'loff~ding', 'loff^ding'}
@@ -50,6 +53,7 @@ def test_custom_seps():
 
     doff = loff.ding.seps_('$').doff
     assert set(doff.symbols_(**a)) == {'loff~ding$doff', 'loff^ding$doff'}
+
 
 def test_import():
     import emacs

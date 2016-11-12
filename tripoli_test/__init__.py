@@ -6,7 +6,10 @@ except ImportError:
     print("Can't run tests outside Emacs embedding.")
 
 else:
+
     try:
+        import tripoli
+
         from os.path import dirname
         import pytest
         import sys

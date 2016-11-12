@@ -1,5 +1,7 @@
-import emacs_raw as e
 import pytest
+
+import emacs_raw as e
+
 
 def test_nil():
     nil = e.intern('nil')
@@ -20,6 +22,7 @@ def test_nil():
     assert nil.is_list()
     assert not nil.is_callable()
     assert not nil
+
 
 def test_intern():
     alpha = e.intern('alpha')
@@ -45,6 +48,7 @@ def test_intern():
         e.intern(2)
     with pytest.raises(TypeError):
         e.intern([])
+
 
 def test_int():
     one = e.int(1)
@@ -86,6 +90,7 @@ def test_int():
     with pytest.raises(TypeError):
         e.int('alpha')
 
+
 def test_float():
     one = e.float(1.1)
     assert repr(one) == '1.1'
@@ -124,6 +129,7 @@ def test_float():
     with pytest.raises(TypeError):
         e.float('alpha')
 
+
 def test_string():
     alpha = e.str('alpha')
     assert repr(alpha) == '"alpha"'
@@ -156,6 +162,7 @@ def test_string():
     s_two = e.str('2.2')
     f_two = float(s_two)
     assert f_two == 2.2
+
 
 def test_cons():
     cons = e.intern('cons')
@@ -204,6 +211,7 @@ def test_cons():
     assert not lst.is_callable()
     assert lst
 
+
 def test_vector():
     vector = e.intern('vector')
     assert vector.is_callable()
@@ -230,6 +238,7 @@ def test_vector():
     assert not vec.is_list()
     assert not vec.is_callable()
     assert vec
+
 
 def test_list():
     list = e.intern('list')
@@ -258,6 +267,7 @@ def test_list():
     assert not lst.is_callable()
     assert lst
 
+
 def test_function():
     def a():
         return e.int(1)
@@ -275,6 +285,7 @@ def test_function():
     ret = func()
     assert ret.is_str()
     assert str(ret) == 'alpha'
+
 
 def test_error():
     error = e.intern('error')
