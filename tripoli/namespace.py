@@ -1,9 +1,34 @@
-import emacs
+import emacs_raw
 from enum import Enum
+from importlib import import_module
+from importlib.machinery import ModuleSpec
 from itertools import groupby, product
 
 
-class Namespace:
+class EmacsNamespaceFinder:
+
+    def find_spec(self, name, path, target):
+        if not name.startswith('emacs'):
+            return None
+        module = EmacsNamespace()
+        for p in name.split('.')[1:]:
+            module = getattr(module, p)
+        return ModuleSpec(name, EmacsNamespaceLoader(module), origin='emacs')
+
+
+class EmacsNamespaceLoader:
+
+    def __init__(self, module):
+        self.module = module
+
+    def create_module(self, spec):
+        return self.module
+
+    def exec_module(self, module):
+        pass
+
+
+class EmacsNamespace:
 
     def __init__(self, prefix=None, v=True, f=True, seps='-/:|'):
         assert v or f
@@ -25,7 +50,7 @@ class Namespace:
             'seps': self.__separators,
         }
         new_kwargs.update(kwargs)
-        return Namespace(**new_kwargs)
+        return EmacsNamespace(**new_kwargs)
 
     def __getitem__(self, index):
         if isinstance(index, str):
@@ -36,6 +61,8 @@ class Namespace:
         self.__cached_subs = {}
 
     def __getattr_special(self, name):
+        if name == 'raw_' and not self.__prefix:
+            return import_module('emacs_raw')
         if name == 'clear_cache_':
             return self.__clear_cache
         elif name == 'v_':
@@ -44,6 +71,8 @@ class Namespace:
             return self.__sub(v=False, f=True)
         elif name == 's_':
             return self.__symbol
+        elif name == 'prefix_':
+            return self.__prefix
         elif name == 'seps_':
             return lambda s: self.__sub(seps=s)
         elif name == 'symbols_':
@@ -83,7 +112,7 @@ class Namespace:
         iters = []
         for parts in product(*self.__prefix[::-1]):
             name = ''.join(parts[::-1])
-            if convert: yield emacs.intern(name)
+            if convert: yield emacs_raw.intern(name)
             else: yield name
 
     @property
@@ -91,8 +120,8 @@ class Namespace:
         if self.__cached_symbol is not None:
             return self.__cached_symbol
         predicates = []
-        if self.__v: predicates.append(emacs.intern('boundp'))
-        if self.__f: predicates.append(emacs.intern('fboundp'))
+        if self.__v: predicates.append(emacs_raw.intern('boundp'))
+        if self.__f: predicates.append(emacs_raw.intern('fboundp'))
         for symbol in self.__symbols():
             if any(pred(symbol) for pred in predicates):
                 if self.__cached_symbol is not None:

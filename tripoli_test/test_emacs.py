@@ -1,8 +1,8 @@
-import emacs
+import emacs_raw as e
 import pytest
 
 def test_nil():
-    nil = emacs.intern('nil')
+    nil = e.intern('nil')
     assert repr(nil) == 'nil'
     assert str(nil) == 'nil'
     with pytest.raises(TypeError):
@@ -22,7 +22,7 @@ def test_nil():
     assert not nil
 
 def test_intern():
-    alpha = emacs.intern('alpha')
+    alpha = e.intern('alpha')
     assert repr(alpha) == 'alpha'
     assert str(alpha) == 'alpha'
     with pytest.raises(TypeError):
@@ -42,12 +42,12 @@ def test_intern():
     assert alpha
 
     with pytest.raises(TypeError):
-        emacs.intern(2)
+        e.intern(2)
     with pytest.raises(TypeError):
-        emacs.intern([])
+        e.intern([])
 
 def test_int():
-    one = emacs.int(1)
+    one = e.int(1)
     assert repr(one) == '1'
     assert str(one) == '1'
     assert int(one) == 1
@@ -64,7 +64,7 @@ def test_int():
     assert not one.is_callable()
     assert one
 
-    zero = emacs.int(0)
+    zero = e.int(0)
     assert repr(zero) == '0'
     assert str(zero) == '0'
     assert int(zero) == 0
@@ -82,12 +82,12 @@ def test_int():
     assert zero
 
     with pytest.raises(TypeError):
-        emacs.int(0.1)
+        e.int(0.1)
     with pytest.raises(TypeError):
-        emacs.int('alpha')
+        e.int('alpha')
 
 def test_float():
-    one = emacs.float(1.1)
+    one = e.float(1.1)
     assert repr(one) == '1.1'
     assert str(one) == '1.1'
     assert int(one) == 1
@@ -104,7 +104,7 @@ def test_float():
     assert not one.is_callable()
     assert one
 
-    zero = emacs.float(0)
+    zero = e.float(0)
     assert repr(zero) == '0.0'
     assert str(zero) == '0.0'
     assert int(zero) == 0
@@ -122,10 +122,10 @@ def test_float():
     assert zero
 
     with pytest.raises(TypeError):
-        emacs.float('alpha')
+        e.float('alpha')
 
 def test_string():
-    alpha = emacs.str('alpha')
+    alpha = e.str('alpha')
     assert repr(alpha) == '"alpha"'
     assert str(alpha) == 'alpha'
     with pytest.raises(ValueError):
@@ -145,25 +145,25 @@ def test_string():
     assert alpha
 
     with pytest.raises(TypeError):
-        emacs.str(2)
+        e.str(2)
     with pytest.raises(TypeError):
-        emacs.str(1.1)
+        e.str(1.1)
 
-    s_one = emacs.str('1')
+    s_one = e.str('1')
     i_one = int(s_one)
     assert i_one == 1
 
-    s_two = emacs.str('2.2')
+    s_two = e.str('2.2')
     f_two = float(s_two)
     assert f_two == 2.2
 
 def test_cons():
-    cons = emacs.intern('cons')
+    cons = e.intern('cons')
     assert cons.is_callable()
-    a = emacs.intern('a')
-    b = emacs.intern('b')
-    c = emacs.intern('c')
-    nil = emacs.intern('nil')
+    a = e.intern('a')
+    b = e.intern('b')
+    c = e.intern('c')
+    nil = e.intern('nil')
 
     cell = cons(a, b)
     lst = cons(a, cons(b, cons(c, nil)))
@@ -205,11 +205,11 @@ def test_cons():
     assert lst
 
 def test_vector():
-    vector = emacs.intern('vector')
+    vector = e.intern('vector')
     assert vector.is_callable()
-    a = emacs.intern('a')
-    b = emacs.intern('b')
-    c = emacs.intern('c')
+    a = e.intern('a')
+    b = e.intern('b')
+    c = e.intern('c')
 
     vec = vector(a, b, c)
 
@@ -232,11 +232,11 @@ def test_vector():
     assert vec
 
 def test_list():
-    list = emacs.intern('list')
+    list = e.intern('list')
     assert list.is_callable()
-    a = emacs.intern('a')
-    b = emacs.intern('b')
-    c = emacs.intern('c')
+    a = e.intern('a')
+    b = e.intern('b')
+    c = e.intern('c')
 
     lst = list(a, b, c)
 
@@ -260,8 +260,8 @@ def test_list():
 
 def test_function():
     def a():
-        return emacs.int(1)
-    func = emacs.function(a, 0, 0)
+        return e.int(1)
+    func = e.function(a, 0, 0)
     assert func.is_callable()
     ret = func()
     assert str(ret) == '1'
@@ -269,43 +269,43 @@ def test_function():
     assert int(ret) == 1
 
     def b():
-        return emacs.str('alpha')
-    func = emacs.function(b, 0, 0)
+        return e.str('alpha')
+    func = e.function(b, 0, 0)
     assert func.is_callable()
     ret = func()
     assert ret.is_str()
     assert str(ret) == 'alpha'
 
 def test_error():
-    error = emacs.intern('error')
-    msg = emacs.str('An error message')
-    with pytest.raises(emacs.Signal) as e:
+    error = e.intern('error')
+    msg = e.str('An error message')
+    with pytest.raises(e.Signal) as ex:
         error(msg)
-    sym, data = e.value.args
+    sym, data = ex.value.args
     assert sym.is_symbol()
     assert str(sym) == 'error'
     assert data.is_list()
     assert str(data) == '("An error message")'
 
-    throw = emacs.intern('throw')
-    tag = emacs.intern('tag')
-    value = emacs.int(1)
-    with pytest.raises(emacs.Throw) as e:
+    throw = e.intern('throw')
+    tag = e.intern('tag')
+    value = e.int(1)
+    with pytest.raises(e.Throw) as ex:
         throw(tag, value)
-    sym, data = e.value.args
+    sym, data = ex.value.args
     assert sym.is_symbol()
     assert str(sym) == 'tag'
     assert data.is_int()
     assert int(data) == 1
 
     def err():
-        error = emacs.intern('error')
-        list = emacs.intern('list')
-        raise emacs.Signal(error, list(emacs.str('message')))
-    func = emacs.function(err, 0, 0)
-    with pytest.raises(emacs.Signal) as e:
+        error = e.intern('error')
+        list = e.intern('list')
+        raise e.Signal(error, list(e.str('message')))
+    func = e.function(err, 0, 0)
+    with pytest.raises(e.Signal) as ex:
         func()
-    sym, data = e.value.args
+    sym, data = ex.value.args
     assert sym.is_symbol()
     assert str(sym) == 'error'
     assert data.is_list()

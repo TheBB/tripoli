@@ -43,7 +43,7 @@ int emacs_module_init(struct emacs_runtime *ert)
     SET_ENV(ert->get_environment(ert));
 
     Py_SetProgramName((wchar_t *)"Tripoli");
-    PyImport_AppendInittab("emacs", &PyInit_emacs);
+    PyImport_AppendInittab("emacs_raw", &PyInit_emacs);
     Py_Initialize();
 
     emacs_value fset = em_intern("fset");

@@ -1,6 +1,6 @@
 try:
     # Check that we are running embedded
-    import emacs
+    import emacs_raw
 
 except ImportError:
     print("Can't run tests outside Emacs embedding.")
