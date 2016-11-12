@@ -76,6 +76,10 @@ PyObject *EmacsObject_float(PyObject *self)
 
 PyObject *EmacsObject_call(PyObject *self, PyObject *args, PyObject *kwds)
 {
+    if (kwds && PyDict_Size(kwds) > 0) {
+        PyErr_SetString(PyExc_ValueError, "Keyword arguments not allowed");
+        return NULL;
+    }
     emacs_value func = ((EmacsObject *)self)->val;
     Py_ssize_t len = PyTuple_Size(args);
     emacs_value e_arglist[len];
