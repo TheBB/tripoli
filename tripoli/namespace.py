@@ -63,6 +63,8 @@ class EmacsNamespace:
             return self.__function_symbol
         elif name == 'vs_':
             return self.__variable_symbol
+        elif name == 'ds_':
+            return self.__default_symbol()
         elif name == 'fb_':
             sym = self.__function_symbol()
             return emacs_raw.intern('symbol-function')(sym)
@@ -77,7 +79,6 @@ class EmacsNamespace:
             return self.__symbols
 
     def __getattr__(self, name):
-        print('__getattr__', name)
         if name.endswith('_'):
             return self.__getattr_special(name)
         if name in self.__cached_subs:
@@ -117,18 +118,14 @@ class EmacsNamespace:
     def __symbol_satisfying(self, predicate, exists):
         found = None
         for s in self.__symbols():
-            print('Testing', s)
             if predicate(s):
                 if found:
                     raise AmbiguousSymbolError()
-                print('Setting to', s)
                 found = s
         if found is None and exists:
-            print('Unbound, raising')
             raise UnboundSymbolError()
         elif found is None:
             sym = next(self.__symbols())
-            print('Unbound, returning', sym)
             return sym
         return found
 
@@ -138,12 +135,20 @@ class EmacsNamespace:
     def __variable_symbol(self, exists=True):
         return self.__symbol_satisfying(emacs_raw.intern('boundp'), exists=exists)
 
+    def __default_symbol(self):
+        return next(self.__symbols())
+
     def __call__(self, *args, **kwargs):
+        args = list(args)
         if kwargs:
-            args = list(args)
             for k, v in kwargs.items():
                 args.append(emacs_raw.intern(':' + k))
                 args.append(v)
+        for i, v in enumerate(args):
+            if isinstance(v, str):
+                args[i] = emacs_raw.str(v)
+            elif isinstance(v, EmacsNamespace):
+                args[i] = v.ds_
         func = self.__function_symbol()
         return func(*args)
 
