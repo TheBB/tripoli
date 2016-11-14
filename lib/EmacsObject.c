@@ -4,6 +4,8 @@
 #include "module.h"
 #include "EmacsObject.h"
 
+#define RETURN_TRUE_IF(pred) \
+    do {if (pred) { Py_RETURN_TRUE; } else { Py_RETURN_FALSE; }} while (0)
 
 PyObject *emacs_object(emacs_value val)
 {
@@ -125,6 +127,65 @@ PyObject *EmacsObject_repr(PyObject *self)
     return ret;
 }
 
+PyObject *EmacsObject_cmp(PyObject *pa, PyObject *pb, int op)
+{
+    // Emacs doesn't have a not-equals function, so we just negate equality
+    if (op == Py_NE) {
+        PyObject *ret = EmacsObject_cmp(pa, pb, Py_EQ);
+        if (!ret)
+            return NULL;
+        bool negated = (ret == Py_False);
+        Py_DECREF(ret);
+        RETURN_TRUE_IF(negated);
+    }
+
+    if (!PyObject_TypeCheck(pb, &EmacsObjectType)) {
+        PyErr_SetString(PyExc_TypeError, "Arguments must be Emacs objects");
+        return NULL;
+    }
+    emacs_value a = ((EmacsObject *)pa)->val;
+    emacs_value b = ((EmacsObject *)pb)->val;
+
+    // Choose which equality predicate to use based on the types involved. This
+    // should make equality behave as close as possible to Python equality.
+    if (op == Py_EQ) {
+        if (em_numberp(a) && em_numberp(b))
+            RETURN_TRUE_IF(em_equal_sign(a, b));
+
+        if (em_stringp(a) && em_stringp(b))
+            RETURN_TRUE_IF(em_string_equal(a, b));
+
+        RETURN_TRUE_IF(em_equal(a, b));
+    }
+
+    // Strings have their own ordering functions
+    if (em_stringp(a) && em_stringp(b)) {
+        if (op == Py_LT)
+            RETURN_TRUE_IF(em_string_lt(a, b));
+        else if (op == Py_LE)
+            RETURN_TRUE_IF(!em_string_gt(a, b));
+        else if (op == Py_GT)
+            RETURN_TRUE_IF(em_string_gt(a, b));
+        else if (op == Py_GE)
+            RETURN_TRUE_IF(!em_string_lt(a, b));
+    }
+
+    // Regular ordering uses number-or-marker-p
+    if (em_number_or_marker_p(a) && em_number_or_marker_p(b)) {
+        if (op == Py_LT)
+            RETURN_TRUE_IF(em_lt(a, b));
+        else if (op == Py_LE)
+            RETURN_TRUE_IF(em_le(a, b));
+        else if (op == Py_GT)
+            RETURN_TRUE_IF(em_gt(a, b));
+        else if (op == Py_GE)
+            RETURN_TRUE_IF(em_ge(a, b));
+    }
+
+    PyErr_SetString(PyExc_TypeError, "Incompatible Emacs objects");
+    return NULL;
+}
+
 PyObject *EmacsObject_type(PyObject *self)
 {
     emacs_value obj = ((EmacsObject *)self)->val;
@@ -156,6 +217,8 @@ PyObject *EmacsObject_is_a(PyObject *self, PyObject *args)
 
 EMACSOBJECT_IS(int, integerp)
 EMACSOBJECT_IS(float, floatp)
+EMACSOBJECT_IS(number, numberp)
+EMACSOBJECT_IS(number_or_marker, number_or_marker_p)
 EMACSOBJECT_IS(str, stringp)
 EMACSOBJECT_IS(symbol, symbolp)
 EMACSOBJECT_IS(cons, consp)
@@ -173,6 +236,8 @@ PyMethodDef EmacsObject_methods[] = {
     METHOD(is_a, VARARGS),
     METHOD(is_int, NOARGS),
     METHOD(is_float, NOARGS),
+    METHOD(is_number, NOARGS),
+    METHOD(is_number_or_marker, NOARGS),
     METHOD(is_str, NOARGS),
     METHOD(is_symbol, NOARGS),
     METHOD(is_cons, NOARGS),
@@ -247,7 +312,7 @@ PyTypeObject EmacsObjectType = {
     "Emacs object",                   // tp_doc
     0,                                // tp_traverse
     0,                                // tp_clear
-    0,                                // tp_richcompare
+    EmacsObject_cmp,                  // tp_richcompare
     0,                                // tp_weaklistoffset
     0,                                // tp_iter
     0,                                // tp_internext
@@ -273,3 +338,5 @@ PyTypeObject EmacsObjectType = {
     0,                                // tp_version_tag
     0,                                // tp_finalize
 };
+
+#undef RETURN_TRUE_IF

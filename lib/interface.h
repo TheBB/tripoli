@@ -153,6 +153,16 @@ bool em_integerp(emacs_value val);
 bool em_floatp(emacs_value val);
 
 /**
+ * \brief Check whether an Emacs object is a number.
+ */
+bool em_numberp(emacs_value val);
+
+/**
+ * \brief Check whether an Emacs object is a number or a marker.
+ */
+bool em_number_or_marker_p(emacs_value val);
+
+/**
  * \brief Check whether an Emacs object is a string.
  */
 bool em_stringp(emacs_value val);
@@ -226,6 +236,64 @@ void em_throw(emacs_value symbol, emacs_value data);
  * \brief Signal an error.
  */
 void em_error(char *message);
+
+
+// Equality and inequality
+
+/**
+ * \brief Check object identity with eq.
+ */
+bool em_eq(emacs_value a, emacs_value b);
+
+/**
+ * \brief Check object identity with eql (compare by value for floats).
+ */
+bool em_eql(emacs_value a, emacs_value b);
+
+/**
+ * \brief Check object equality with equal (structural equality).
+ */
+bool em_equal(emacs_value a, emacs_value b);
+
+/**
+ * \brief Check object equality with = (numerical equality).
+ */
+bool em_equal_sign(emacs_value a, emacs_value b);
+
+/**
+ * \brief Check string equality.
+ */
+bool em_string_equal(emacs_value a, emacs_value b);
+
+/**
+ * \brief Less than.
+ */
+bool em_lt(emacs_value a, emacs_value b);
+
+/**
+ * \brief Less than or equal to.
+ */
+bool em_le(emacs_value a, emacs_value b);
+
+/**
+ * \brief Greater than.
+ */
+bool em_gt(emacs_value a, emacs_value b);
+
+/**
+ * \brief Greater than or equal to.
+ */
+bool em_ge(emacs_value a, emacs_value b);
+
+/**
+ * \brief String lexicographic ordering.
+ */
+bool em_string_lt(emacs_value a, emacs_value b);
+
+/**
+ * \brief String lexicographic ordering.
+ */
+bool em_string_gt(emacs_value a, emacs_value b);
 
 
 // Other functions

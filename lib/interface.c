@@ -96,21 +96,27 @@ bool em_truthy(emacs_value val)
     return env->is_not_nil(env, val);
 }
 
-#define PREDICATE(name) \
-    bool em_ ## name(emacs_value val) \
-    { \
-        emacs_value pred = em_intern(#name); \
-        return em_truthy(em_funcall_naive(pred, 1, &val)); \
+#define PREDICATE(name, test)                                   \
+    bool em_ ## name(emacs_value val)                           \
+    {                                                           \
+        emacs_value pred = em_intern(test);                     \
+        return em_truthy(em_funcall_naive(pred, 1, &val));      \
     }
+#define SIMPLE_PREDICATE(name) PREDICATE(name, #name)
 
-PREDICATE(integerp)
-PREDICATE(floatp)
-PREDICATE(stringp)
-PREDICATE(symbolp)
-PREDICATE(consp)
-PREDICATE(vectorp)
-PREDICATE(listp)
-PREDICATE(functionp)
+SIMPLE_PREDICATE(integerp)
+SIMPLE_PREDICATE(floatp)
+SIMPLE_PREDICATE(numberp)
+PREDICATE(number_or_marker_p, "number-or-marker-p")
+SIMPLE_PREDICATE(stringp)
+SIMPLE_PREDICATE(symbolp)
+SIMPLE_PREDICATE(consp)
+SIMPLE_PREDICATE(vectorp)
+SIMPLE_PREDICATE(listp)
+SIMPLE_PREDICATE(functionp)
+
+#undef SIMPLE_PREDICATE
+#undef PREDICATE
 
 emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args,
                        enum emacs_funcall_exit *exit_signal,
@@ -149,6 +155,28 @@ void em_error(char *message)
     emacs_value data = em_funcall_naive(list, 1, &emsg);
     em_signal(em_intern("error"), data);
 }
+
+#define EQUALITY(name, lisp)                                    \
+    bool em_ ## name(emacs_value a, emacs_value b)              \
+    {                                                           \
+        emacs_value eq = em_intern(lisp);                       \
+        emacs_value args[] = {a, b};                            \
+        return em_truthy(em_funcall_naive(eq, 2, args));        \
+    }
+
+EQUALITY(eq, "eq")
+EQUALITY(eql, "eql")
+EQUALITY(equal, "equal")
+EQUALITY(equal_sign, "=")
+EQUALITY(string_equal, "string-equal")
+EQUALITY(lt, "<")
+EQUALITY(le, "<=")
+EQUALITY(gt, ">")
+EQUALITY(ge, ">=")
+EQUALITY(string_lt, "string<")
+EQUALITY(string_gt, "string>")
+
+#undef EQUALITY
 
 char *em_print_obj(emacs_value obj)
 {

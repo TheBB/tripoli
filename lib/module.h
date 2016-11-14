@@ -59,6 +59,62 @@ DOCSTRING(py_function,
           "propagated as error signals.");
 PyObject *py_function(PyObject *self, PyObject *args);
 
+DOCSTRING(py_eq,
+          "eq(a, b)\n\n"
+          "Check object equality using eq. Equivalent to (eq a b) in elisp.");
+PyObject *py_eq(PyObject *self, PyObject *args);
+
+DOCSTRING(py_eql,
+          "eql(a, b)\n\n"
+          "Check object equality using eq. Equivalent to (eql a b) in elisp.");
+PyObject *py_eql(PyObject *self, PyObject *args);
+
+DOCSTRING(py_equal,
+          "equal(a, b)\n\n"
+          "Check object equality using equal. Equivalent to (equal a b) in elisp.");
+PyObject *py_equal(PyObject *self, PyObject *args);
+
+DOCSTRING(py_equal_sign,
+          "equal_sign(a, b)\n\n"
+          "Check object equality using =. Equivalent to (= a b) in elisp.");
+PyObject *py_equal_sign(PyObject *self, PyObject *args);
+
+DOCSTRING(py_string_equal,
+          "string_equal(a, b)\n\n"
+          "Check object equality using string-equal. Equivalent to (string-equal a b) in\n"
+          "elisp.");
+PyObject *py_string_equal(PyObject *self, PyObject *args);
+
+DOCSTRING(py_lt,
+          "lt(a, b)\n\n"
+          "Equivalent to (< a b) in elisp.");
+PyObject *py_lt(PyObject *self, PyObject *args);
+
+DOCSTRING(py_le,
+          "le(a, b)\n\n"
+          "Equivalent to (<= a b) in elisp.");
+PyObject *py_le(PyObject *self, PyObject *args);
+
+DOCSTRING(py_gt,
+          "gt(a, b)\n\n"
+          "Equivalent to (> a b) in elisp.");
+PyObject *py_gt(PyObject *self, PyObject *args);
+
+DOCSTRING(py_ge,
+          "ge(a, b)\n\n"
+          "Equivalent to (>= a b) in elisp.");
+PyObject *py_ge(PyObject *self, PyObject *args);
+
+DOCSTRING(py_string_lt,
+          "string_lt(a, b)\n\n"
+          "Equivalent to (string< a b) in elisp.");
+PyObject *py_string_lt(PyObject *self, PyObject *args);
+
+DOCSTRING(py_string_gt,
+          "string_gt(a, b)\n\n"
+          "Equivalent to (string> a b) in elisp.");
+PyObject *py_string_gt(PyObject *self, PyObject *args);
+
 extern PyObject *EmacsSignal;
 extern PyObject *EmacsThrow;
 

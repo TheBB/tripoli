@@ -5,6 +5,7 @@ import emacs_raw as e
 
 def test_nil():
     nil = e.intern('nil')
+    assert e.eq(nil, e.intern('nil'))
     assert repr(nil) == 'nil'
     assert str(nil) == 'nil'
     with pytest.raises(TypeError):
@@ -26,6 +27,7 @@ def test_nil():
 
 def test_intern():
     alpha = e.intern('alpha')
+    assert e.eq(alpha, e.intern('alpha'))
     assert repr(alpha) == 'alpha'
     assert str(alpha) == 'alpha'
     with pytest.raises(TypeError):
@@ -52,6 +54,7 @@ def test_intern():
 
 def test_int():
     one = e.int(1)
+    assert e.eq(one, e.int(1))
     assert repr(one) == '1'
     assert str(one) == '1'
     assert int(one) == 1
@@ -69,6 +72,7 @@ def test_int():
     assert one
 
     zero = e.int(0)
+    assert e.eq(zero, e.int(0))
     assert repr(zero) == '0'
     assert str(zero) == '0'
     assert int(zero) == 0
@@ -93,6 +97,7 @@ def test_int():
 
 def test_float():
     one = e.float(1.1)
+    assert e.eql(one, e.float(1.1))
     assert repr(one) == '1.1'
     assert str(one) == '1.1'
     assert int(one) == 1
@@ -110,6 +115,7 @@ def test_float():
     assert one
 
     zero = e.float(0)
+    assert e.eql(zero, e.float(0))
     assert repr(zero) == '0.0'
     assert str(zero) == '0.0'
     assert int(zero) == 0
@@ -132,6 +138,7 @@ def test_float():
 
 def test_string():
     alpha = e.str('alpha')
+    assert e.string_equal(alpha, e.str('alpha'))
     assert repr(alpha) == '"alpha"'
     assert str(alpha) == 'alpha'
     with pytest.raises(ValueError):
@@ -178,6 +185,8 @@ def test_cons():
     cell = cons(a, b)
     lst = cons(a, cons(b, cons(c, nil)))
 
+    assert e.equal(cell, cons(a, b))
+    assert not e.eq(cell, cons(a, b))
     assert repr(cell) == '(a . b)'
     assert str(cell) == '(a . b)'
     with pytest.raises(TypeError):
@@ -196,6 +205,8 @@ def test_cons():
     assert not cell.is_callable()
     assert cell
 
+    assert e.equal(lst, cons(a, cons(b, cons(c, nil))))
+    assert not e.eq(lst, cons(a, cons(b, cons(c, nil))))
     assert repr(lst) == '(a b c)'
     assert str(lst) == '(a b c)'
     with pytest.raises(TypeError):
@@ -224,6 +235,8 @@ def test_vector():
 
     vec = vector(a, b, c)
 
+    assert e.equal(vec, vector(a, b, c))
+    assert not e.eq(vec, vector(a, b, c))
     assert repr(vec) == '[a b c]'
     assert str(vec) == '[a b c]'
     with pytest.raises(TypeError):
@@ -252,6 +265,8 @@ def test_list():
 
     lst = list(a, b, c)
 
+    assert e.equal(lst, list(a, b, c))
+    assert not e.eq(lst, list(a, b, c))
     assert repr(lst) == '(a b c)'
     assert str(lst) == '(a b c)'
     with pytest.raises(TypeError):
@@ -291,15 +306,15 @@ def test_function():
 
 
 def test_error():
+    list = e.intern('list')
+
     error = e.intern('error')
     msg = e.str('An error message')
     with pytest.raises(e.Signal) as ex:
         error(msg)
     sym, data = ex.value.args
-    assert sym.is_symbol()
-    assert str(sym) == 'error'
-    assert data.is_list()
-    assert str(data) == '("An error message")'
+    assert e.eq(sym, e.intern('error'))
+    assert e.equal(data, list(msg))
 
     throw = e.intern('throw')
     tag = e.intern('tag')
@@ -307,10 +322,8 @@ def test_error():
     with pytest.raises(e.Throw) as ex:
         throw(tag, value)
     sym, data = ex.value.args
-    assert sym.is_symbol()
-    assert str(sym) == 'tag'
-    assert data.is_int()
-    assert int(data) == 1
+    assert e.eq(sym, e.intern('tag'))
+    assert e.equal_sign(data, value)
 
     def err():
         error = e.intern('error')
@@ -320,7 +333,5 @@ def test_error():
     with pytest.raises(e.Signal) as ex:
         func()
     sym, data = ex.value.args
-    assert sym.is_symbol()
-    assert str(sym) == 'error'
-    assert data.is_list()
-    assert str(data) == '("message")'
+    assert e.eq(sym, e.intern('error'))
+    assert e.equal(data, list(e.str('message')))

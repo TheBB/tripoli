@@ -50,6 +50,18 @@ DOCSTRING(EmacsObject_is_float,
           "Equivalent to (floatp obj) in elisp.");
 PyObject *EmacsObject_is_float(PyObject *self);
 
+DOCSTRING(EmacsObject_is_number,
+          "obj.is_number()\n\n"
+          "Check whether the object is a number (integer or float).\n\n"
+          "Equivalent to (numberp obj) in elisp.");
+PyObject *EmacsObject_is_number(PyObject *self);
+
+DOCSTRING(EmacsObject_is_number_or_marker,
+          "obj.is_number_or_marker()\n\n"
+          "Check whether the object is a number or a marker.\n\n"
+          "Equivalent to (number-or-marker-p obj) in elisp.");
+PyObject *EmacsObject_is_number_or_marker(PyObject *self);
+
 DOCSTRING(EmacsObject_is_str,
           "obj.is_str()\n\n"
           "Check whether the object is a string.\n\n"
@@ -75,7 +87,7 @@ DOCSTRING(EmacsObject_is_vector,
 PyObject *EmacsObject_is_vector(PyObject *self);
 
 DOCSTRING(EmacsObject_is_list,
-          "obj.is_list()\n\n"
+
           "Check whether the object is a list.\n\n"
           "Equivalent to (listp obj) in elisp.");
 PyObject *EmacsObject_is_list(PyObject *self);

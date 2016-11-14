@@ -140,6 +140,40 @@ PyObject *py_function(PyObject *self, PyObject *args)
     return emacs_object(func);
 }
 
+#define EQUALITY(pred)                                                  \
+    PyObject *py_ ## pred(PyObject *self, PyObject *args)               \
+    {                                                                   \
+        PyObject *pa, *pb;                                              \
+        if (!PyArg_ParseTuple(args, "OO", &pa, &pb))                    \
+            return NULL;                                                \
+        if (!PyObject_TypeCheck(pa, &EmacsObjectType) ||                \
+            !PyObject_TypeCheck(pb, &EmacsObjectType))                  \
+        {                                                               \
+            PyErr_SetString(PyExc_TypeError, "Arguments must be Emacs objects"); \
+            return NULL;                                                \
+        }                                                               \
+        emacs_value a, b;                                               \
+        a = ((EmacsObject *)pa)->val;                                   \
+        b = ((EmacsObject *)pb)->val;                                   \
+        if (em_ ## pred(a, b))                                          \
+            Py_RETURN_TRUE;                                             \
+        Py_RETURN_FALSE;                                                \
+    }
+
+EQUALITY(eq)
+EQUALITY(eql)
+EQUALITY(equal)
+EQUALITY(equal_sign)
+EQUALITY(string_equal)
+EQUALITY(lt)
+EQUALITY(le)
+EQUALITY(gt)
+EQUALITY(ge)
+EQUALITY(string_lt)
+EQUALITY(string_gt)
+
+#undef EQUALITY
+
 #define METHOD(name, args)                                              \
     {#name, py_ ## name, METH_ ## args, __doc_py_ ## name}
 
@@ -149,6 +183,17 @@ PyMethodDef methods[] = {
     METHOD(int, VARARGS),
     METHOD(float, VARARGS),
     METHOD(function, VARARGS),
+    METHOD(eq, VARARGS),
+    METHOD(eql, VARARGS),
+    METHOD(equal, VARARGS),
+    METHOD(equal_sign, VARARGS),
+    METHOD(string_equal, VARARGS),
+    METHOD(lt, VARARGS),
+    METHOD(le, VARARGS),
+    METHOD(gt, VARARGS),
+    METHOD(ge, VARARGS),
+    METHOD(string_lt, VARARGS),
+    METHOD(string_gt, VARARGS),
     {NULL},
 };
 
