@@ -175,6 +175,18 @@ EQUALITY(ge, ">=")
 EQUALITY(string_lt, "string<")
 EQUALITY(string_gt, "string>")
 
+emacs_value em_eval(char *c)
+{
+    emacs_value read = em_intern("read");
+    emacs_value eval = em_intern("eval");
+    emacs_value code = em_str(c);
+    emacs_value sexp = em_funcall_naive(read, 1, &code);
+    if (!sexp)
+        return NULL;
+    emacs_value ret = em_funcall_naive(eval, 1, &sexp);
+    return ret;
+}
+
 char *em_print_obj(emacs_value obj)
 {
     emacs_value format_fcn = em_intern("format");

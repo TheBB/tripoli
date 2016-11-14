@@ -44,7 +44,13 @@ emacs_env *get_environment();
  * function which has called SET_ENV), this macro MUST be called before
  * returning.
  */
-#define UNSET_ENV() set_environment(__tmp)
+#define UNSET_ENV set_environment(__tmp)
+
+/**
+ * \brief Restore the previous Emacs environment and return.
+ */
+#define UNSET_ENV_AND_RETURN(val) \
+    do { emacs_value __rval = (val); set_environment(__tmp); return __rval; } while (0)
 
 
 // Convenience functions
@@ -297,6 +303,11 @@ bool em_string_gt(emacs_value a, emacs_value b);
 
 
 // Other functions
+
+/**
+ * \brief Executes arbitrary elisp.
+ */
+emacs_value em_eval(char *code);
 
 /**
  * \brief Returns the printed representation of an Emacs object.

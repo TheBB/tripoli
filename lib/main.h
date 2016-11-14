@@ -11,10 +11,20 @@ DOCSTRING(import_module,
           "Imports the Python module MODULE via Tripoli.");
 static emacs_value import_module(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data);
 
-DOCSTRING(run_python,
-          "(tripoli-run CODE)\n\n"
+DOCSTRING(run_string,
+          "(tripoli-run-string CODE)\n\n"
           "Runs the python code in the string CODE.");
-static emacs_value run_python(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data);
+static emacs_value run_string(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data);
+
+DOCSTRING(run_file,
+          "(tripoli-run-file FILENAME)\n\n"
+          "Runs the python code in the file given by FILENAME.");
+static emacs_value run_file(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data);
+
+DOCSTRING(run_buffer,
+          "(tripoli-run-buffer)\n\n"
+          "Runs the python code in the current buffer.");
+static emacs_value run_buffer(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data);
 
 /**
  * \brief Initialize the Tripoli library.
