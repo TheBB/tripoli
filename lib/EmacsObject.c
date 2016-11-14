@@ -4,8 +4,22 @@
 #include "module.h"
 #include "EmacsObject.h"
 
-#define RETURN_TRUE_IF(pred) \
+
+#define RETURN_TRUE_IF(pred)                                            \
     do {if (pred) { Py_RETURN_TRUE; } else { Py_RETURN_FALSE; }} while (0)
+
+#define EMACSOBJECT_IS(pytype, predicate)               \
+    PyObject *EmacsObject_is_ ## pytype(PyObject *self) \
+    {                                                   \
+        emacs_value obj = ((EmacsObject *)self)->val;   \
+        if (em_ ## predicate(obj))                      \
+            Py_RETURN_TRUE;                             \
+        Py_RETURN_FALSE;                                \
+    }
+
+#define METHOD(name, args)                                              \
+    {#name, (PyCFunction)EmacsObject_ ## name, METH_ ## args, __doc_EmacsObject_ ## name}
+
 
 PyObject *emacs_object(emacs_value val)
 {
@@ -206,15 +220,6 @@ PyObject *EmacsObject_is_a(PyObject *self, PyObject *args)
     Py_RETURN_FALSE;
 }
 
-#define EMACSOBJECT_IS(pytype, predicate) \
-    PyObject *EmacsObject_is_ ## pytype(PyObject *self) \
-    { \
-        emacs_value obj = ((EmacsObject *)self)->val; \
-        if (em_ ## predicate(obj)) \
-            Py_RETURN_TRUE; \
-        Py_RETURN_FALSE; \
-    }
-
 EMACSOBJECT_IS(int, integerp)
 EMACSOBJECT_IS(float, floatp)
 EMACSOBJECT_IS(number, numberp)
@@ -225,11 +230,6 @@ EMACSOBJECT_IS(cons, consp)
 EMACSOBJECT_IS(vector, vectorp)
 EMACSOBJECT_IS(list, listp)
 EMACSOBJECT_IS(callable, functionp)
-
-#undef EMACSOBJECT_IS
-
-#define METHOD(name, args) \
-    {#name, (PyCFunction)EmacsObject_ ## name, METH_ ## args, __doc_EmacsObject_ ## name}
 
 PyMethodDef EmacsObject_methods[] = {
     METHOD(type, NOARGS),
@@ -246,8 +246,6 @@ PyMethodDef EmacsObject_methods[] = {
     METHOD(is_callable, NOARGS),
     {NULL},
 };
-
-#undef METHOD
 
 static PyNumberMethods EmacsObject_NumMethods[] = {
     0,                                // nb_add
@@ -338,5 +336,3 @@ PyTypeObject EmacsObjectType = {
     0,                                // tp_version_tag
     0,                                // tp_finalize
 };
-
-#undef RETURN_TRUE_IF
