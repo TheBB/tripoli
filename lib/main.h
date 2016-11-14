@@ -8,9 +8,13 @@ int plugin_is_GPL_compatible;
 
 DOCSTRING(import_module,
           "(tripoli-import MODULE)\n\n"
-          "Imports the Python module MODULE via Tripoli.\n\n"
-          "Returns t on success, nil on failure.");
+          "Imports the Python module MODULE via Tripoli.");
 static emacs_value import_module(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data);
+
+DOCSTRING(run_python,
+          "(tripoli-run CODE)\n\n"
+          "Runs the python code in the string CODE.");
+static emacs_value run_python(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data);
 
 /**
  * \brief Initialize the Tripoli library.
