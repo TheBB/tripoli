@@ -67,7 +67,7 @@ class EmacsNamespace:
             sym = self.__function_symbol()
             return emacs_raw.intern('symbol-function')(sym)
         elif name == 'vb_':
-            sym = self.__function_symbol()
+            sym = self.__variable_symbol()
             return emacs_raw.intern('symbol-value')(sym)
         elif name == 'prefix_':
             return self.__prefix
