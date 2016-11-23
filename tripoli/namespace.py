@@ -139,16 +139,13 @@ class EmacsNamespace:
         return next(self.__symbols())
 
     def __call__(self, *args, **kwargs):
-        args = list(args)
+        from .util import emacsify
+        args = [emacsify(v) for v in args]
+        kwargs = {k: emacsify(v) for k, v in kwargs.items()}
         if kwargs:
             for k, v in kwargs.items():
                 args.append(emacs_raw.intern(':' + k))
                 args.append(v)
-        for i, v in enumerate(args):
-            if isinstance(v, str):
-                args[i] = emacs_raw.str(v)
-            elif isinstance(v, EmacsNamespace):
-                args[i] = v.ds_
         func = self.__function_symbol()
         return func(*args)
 

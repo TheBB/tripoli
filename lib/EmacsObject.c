@@ -154,8 +154,7 @@ PyObject *EmacsObject_cmp(PyObject *pa, PyObject *pb, int op)
     }
 
     if (!PyObject_TypeCheck(pb, &EmacsObjectType)) {
-        PyErr_SetString(PyExc_TypeError, "Arguments must be Emacs objects");
-        return NULL;
+        Py_RETURN_FALSE;
     }
     emacs_value a = ((EmacsObject *)pa)->val;
     emacs_value b = ((EmacsObject *)pb)->val;
@@ -196,8 +195,7 @@ PyObject *EmacsObject_cmp(PyObject *pa, PyObject *pb, int op)
             RETURN_TRUE_IF(em_ge(a, b));
     }
 
-    PyErr_SetString(PyExc_TypeError, "Incompatible Emacs objects");
-    return NULL;
+    Py_RETURN_FALSE;
 }
 
 PyObject *EmacsObject_type(PyObject *self)

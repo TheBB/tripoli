@@ -5,3 +5,10 @@ from .namespace import (
 
 sys.meta_path.append(EmacsNamespaceFinder())
 sys.modules['emacs'] = EmacsNamespace()
+
+from .util import emacsify_args, symbolify_args
+
+import emacs as e
+import emacs_raw as er
+require = symbolify_args()(e.require)
+_ = er.intern

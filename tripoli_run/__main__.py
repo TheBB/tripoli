@@ -12,6 +12,9 @@ def main():
         args.insert(1, '--batch')
         args.extend(['--eval', '(tripoli-run-string "from tripoli.test import run_tests; run_tests()")',
                      '--eval', '(kill-emacs)'])
+    else:
+        dotfile = join(dirname(__file__), '..', 'dotemacs.py')
+        args.extend(['--eval', '(tripoli-run-file "{}")'.format(dotfile)])
     run(args, check=True)
 
 if __name__ == '__main__':
