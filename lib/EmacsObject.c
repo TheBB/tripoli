@@ -141,60 +141,98 @@ PyObject *EmacsObject_repr(PyObject *self)
     return ret;
 }
 
-PyObject *EmacsObject_cmp(PyObject *pa, PyObject *pb, int op)
+bool _cmp(emacs_value a, emacs_value b, int op, bool *error)
 {
-    // Emacs doesn't have a not-equals function, so we just negate equality
-    if (op == Py_NE) {
-        PyObject *ret = EmacsObject_cmp(pa, pb, Py_EQ);
-        if (!ret)
-            return NULL;
-        bool negated = (ret == Py_False);
-        Py_DECREF(ret);
-        RETURN_TRUE_IF(negated);
-    }
+    *error = false;
 
-    if (!PyObject_TypeCheck(pb, &EmacsObjectType)) {
-        Py_RETURN_FALSE;
-    }
-    emacs_value a = ((EmacsObject *)pa)->val;
-    emacs_value b = ((EmacsObject *)pb)->val;
+    // Emacs doesn't have a not-equals function, so let's just negate equality
+    if (op == Py_NE)
+        return !_cmp(a, b, Py_EQ, error);
 
     // Choose which equality predicate to use based on the types involved. This
     // should make equality behave as close as possible to Python equality.
     if (op == Py_EQ) {
         if (em_numberp(a) && em_numberp(b))
-            RETURN_TRUE_IF(em_equal_sign(a, b));
-
+            return em_equal_sign(a, b);
         if (em_stringp(a) && em_stringp(b))
-            RETURN_TRUE_IF(em_string_equal(a, b));
-
-        RETURN_TRUE_IF(em_equal(a, b));
+            return em_string_equal(a, b);
+        return em_equal(a, b);
     }
 
     // Strings have their own ordering functions
     if (em_stringp(a) && em_stringp(b)) {
         if (op == Py_LT)
-            RETURN_TRUE_IF(em_string_lt(a, b));
+            return em_string_lt(a, b);
         else if (op == Py_LE)
-            RETURN_TRUE_IF(!em_string_gt(a, b));
+            return !em_string_gt(a, b);
         else if (op == Py_GT)
-            RETURN_TRUE_IF(em_string_gt(a, b));
+            return em_string_gt(a, b);
         else if (op == Py_GE)
-            RETURN_TRUE_IF(!em_string_lt(a, b));
+            return !em_string_lt(a, b);
     }
 
     // Regular ordering uses number-or-marker-p
     if (em_number_or_marker_p(a) && em_number_or_marker_p(b)) {
         if (op == Py_LT)
-            RETURN_TRUE_IF(em_lt(a, b));
+            return em_lt(a, b);
         else if (op == Py_LE)
-            RETURN_TRUE_IF(em_le(a, b));
+            return em_le(a, b);
         else if (op == Py_GT)
-            RETURN_TRUE_IF(em_gt(a, b));
+            return em_gt(a, b);
         else if (op == Py_GE)
-            RETURN_TRUE_IF(em_ge(a, b));
+            return em_ge(a, b);
     }
 
+    *error = true;
+    return false;
+}
+
+PyObject *EmacsObject_cmp(PyObject *pa, PyObject *pb, int op)
+{
+    emacs_value a = ((EmacsObject *)pa)->val;
+    emacs_value b = NULL;
+
+    if (em_numberp(a) && PyLong_Check(pb)) {
+        int overflow;
+        long long val = PyLong_AsLongLongAndOverflow(pb, &overflow);
+        if (PyErr_Occurred())
+            return NULL;
+        if (overflow)
+            Py_RETURN_FALSE;
+        b = em_int(val);
+    }
+    else if (em_numberp(a) && PyFloat_Check(pb)) {
+        double val = PyFloat_AsDouble(pb);
+        if (PyErr_Occurred()) return NULL;
+        b = em_float(val);
+    }
+    else if (em_stringp(a) && PyUnicode_Check(pb)) {
+        char *val = PyUnicode_AsUTF8AndSize(pb, NULL);
+        if (!val) return NULL;
+        b = em_str(val);
+    }
+    else if (!PyObject_TypeCheck(pb, &EmacsObjectType)) {
+        if (op == Py_EQ)
+            Py_RETURN_FALSE;
+        else if (op == Py_NE)
+            Py_RETURN_TRUE;
+        else {
+            PyErr_SetString(PyExc_TypeError, "Unorderable types");
+            return NULL;
+        }
+    }
+    else
+        b = ((EmacsObject *)pb)->val;
+
+    bool error;
+    bool ret = _cmp(a, b, op, &error);
+
+    if (error) {
+        PyErr_SetString(PyExc_TypeError, "Unorderable types");
+        return NULL;
+    }
+    else if (ret)
+        Py_RETURN_TRUE;
     Py_RETURN_FALSE;
 }
 

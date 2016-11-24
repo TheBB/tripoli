@@ -335,3 +335,32 @@ def test_error():
     sym, data = ex.value.args
     assert e.eq(sym, e.intern('error'))
     assert e.equal(data, list(e.str('message')))
+
+
+def test_cmp():
+    assert e.int(0) == e.int(0)
+    assert e.int(0) != e.int(1)
+    assert e.int(0) < e.int(1)
+    assert not e.int(1) <= e.int(0)
+
+    assert e.int(0) == 0
+    assert 0 == e.int(0)
+    assert 1 < e.int(2)
+
+    assert e.float(9.1) >= 9.1
+    assert e.float(8) == 8
+    assert 0 == e.float(0.0)
+
+    assert 'a' == e.str('a')
+    assert e.str('abc') < 'abd'
+    assert 'q' != e.str('Q')
+
+    assert not e.str('a') == []
+    assert e.str('a') != []
+
+    with pytest.raises(TypeError):
+        e.str('a') < 1
+    with pytest.raises(TypeError):
+        e.str('a') > []
+    with pytest.raises(TypeError):
+        e.str('a') >= ()

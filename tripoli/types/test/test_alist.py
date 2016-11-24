@@ -13,9 +13,9 @@ def test_getitem():
         cons(_('c'), er.int(3)),
     )
     alist = AssociationList(eo, assq=True, prefer_symbol=False)
-    assert alist[_('a')] == er.int(1)
-    assert alist[_('b')] == er.int(2)
-    assert alist[_('c')] == er.int(3)
+    assert alist[_('a')] == 1
+    assert alist[_('b')] == 2
+    assert alist[_('c')] == 3
     with pytest.raises(KeyError):
         alist[_('d')]
     with pytest.raises(KeyError):
@@ -30,12 +30,12 @@ def test_getitem():
     with pytest.raises(KeyError):
         alist[er.str('a')]
     alist = AssociationList(eo, assq=False, prefer_symbol=False)
-    assert alist[er.str('a')] == er.int(1)
-    assert alist[er.str('b')] == er.int(2)
-    assert alist[er.str('c')] == er.int(3)
-    assert alist['a'] == er.int(1)
-    assert alist['b'] == er.int(2)
-    assert alist['c'] == er.int(3)
+    assert alist[er.str('a')] == 1
+    assert alist[er.str('b')] == 2
+    assert alist[er.str('c')] == 3
+    assert alist['a'] == 1
+    assert alist['b'] == 2
+    assert alist['c'] == 3
     with pytest.raises(KeyError):
         alist[er.str('d')]
 
@@ -45,12 +45,12 @@ def test_getitem():
         cons(_('c'), er.int(3)),
     )
     alist = AssociationList(eo, assq=True, prefer_symbol=True)
-    assert alist[_('a')] == er.int(1)
-    assert alist[_('b')] == er.int(2)
-    assert alist[_('c')] == er.int(3)
-    assert alist['a'] == er.int(1)
-    assert alist['b'] == er.int(2)
-    assert alist['c'] == er.int(3)
+    assert alist[_('a')] == 1
+    assert alist[_('b')] == 2
+    assert alist[_('c')] == 3
+    assert alist['a'] == 1
+    assert alist['b'] == 2
+    assert alist['c'] == 3
 
 
 def test_setitem():
@@ -63,10 +63,10 @@ def test_setitem():
     alist['a'] = 5
     alist['d'] = 6
 
-    assert alist['a'] == er.int(5)
-    assert alist['b'] == er.int(2)
-    assert alist['c'] == er.int(3)
-    assert alist['d'] == er.int(6)
+    assert alist['a'] == 5
+    assert alist['b'] == 2
+    assert alist['c'] == 3
+    assert alist['d'] == 6
 
     l = List(alist.place)
     assert len(l) == 4
@@ -81,10 +81,10 @@ def test_setitem():
     alist['a'] = 5
     alist['d'] = 6
 
-    assert alist['a'] == er.int(5)
-    assert alist['b'] == er.int(2)
-    assert alist['c'] == er.int(3)
-    assert alist['d'] == er.int(6)
+    assert alist['a'] == 5
+    assert alist['b'] == 2
+    assert alist['c'] == 3
+    assert alist['d'] == 6
 
     l = List(alist.place)
     assert len(l) == 5
@@ -101,7 +101,7 @@ def test_delitem_len():
 
     with pytest.raises(TypeError):
         del alist['a']
-    assert alist['b'] == er.int(2)
+    assert alist['b'] == 2
     del alist['b']
     assert len(alist) == 2
     with pytest.raises(KeyError):
@@ -115,11 +115,11 @@ def test_delitem_len():
     setq(_('test'), eo)
     alist = AssociationList(_('test'), assq=True, prefer_symbol=True)
 
-    assert alist['a'] == er.int(1)
+    assert alist['a'] == 1
     del alist['a']
     with pytest.raises(KeyError):
         alist['a']
-    assert alist['b'] == er.int(2)
+    assert alist['b'] == 2
     del alist['b']
     assert len(alist) == 1
     with pytest.raises(KeyError):
@@ -137,10 +137,10 @@ def test_iter():
     alist = AssociationList(eo, assq=True, prefer_symbol=True)
     assert list(alist) == [_('d'), _('a'), _('b'), _('c')]
     assert list(alist.keys()) == [_('d'), _('a'), _('b'), _('c')]
-    assert list(alist.values()) == [er.int(0), er.int(1), er.int(2), er.int(3)]
+    assert list(alist.values()) == [0, 1, 2, 3]
     assert list(alist.items()) == [
-        (_('d'), er.int(0)),
-        (_('a'), er.int(1)),
-        (_('b'), er.int(2)),
-        (_('c'), er.int(3)),
+        (_('d'), 0),
+        (_('a'), 1),
+        (_('b'), 2),
+        (_('c'), 3),
     ]
