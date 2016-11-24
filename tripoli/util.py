@@ -39,7 +39,8 @@ def emacsify_args(only=None, avoid=set(), prefer_symbol=set(),
         if key in avoid:
             return value
         if only is None or key in only:
-            return emacsify(value, key in prefer_symbol)
+            sym = (prefer_symbol is True) or (key in prefer_symbol)
+            return emacsify(value, sym)
         return value
     def decorator(fn):
         def ret(*args, **kwargs):

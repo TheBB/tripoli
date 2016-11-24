@@ -1,18 +1,15 @@
 from tripoli import require
 from tripoli.types import AssociationList, List
-
-import emacs_raw
-
-import emacs as e
-from emacs import cons
-
-features = List(e.features)
+from emacs import package
 
 require('package')
 
-archives = AssociationList(e.package_archives)
-archives['gnu'] = 'https://elpa.gnu.org/packages/'
-archives['org'] = 'https://orgmode.org/packages/'
-print(archives.place)
-del archives['gnu']
-print(archives.place)
+archives = AssociationList(package.archives, inplace=True)
+archives.update({
+    'gnu': 'https://elpa.gnu.org/packages/',
+    'org': 'http://orgmode.org/elpa/',
+    'melpa': 'https://melpa.org/packages/',
+})
+
+package.initialize()
+package.refresh_contents()
