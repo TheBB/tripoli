@@ -20,6 +20,55 @@
 #define METHOD(name, args)                                              \
     {#name, (PyCFunction)EmacsObject_ ## name, METH_ ## args, __doc_EmacsObject_ ## name}
 
+#define NORMALIZE(name, target)                                         \
+    do {                                                                \
+        if (PyObject_TypeCheck(name, &EmacsObjectType)) {               \
+            target = normalize(name);                                   \
+            if (!target) {                                              \
+                PyErr_SetString(PyExc_TypeError, "Unsupported operand for +"); \
+                return NULL;                                            \
+            }                                                           \
+        }                                                               \
+    } while(0)
+
+#define NORMALIZED_UNARY_OPERATION(name, pyname)                        \
+    PyObject *EmacsObject_ ## name(PyObject *self)                      \
+    {                                                                   \
+        PyObject *c_self = self;                                        \
+        if (PyObject_TypeCheck(self, &EmacsObjectType))                 \
+            c_self = normalize(c_self);                                 \
+                                                                        \
+        PyObject *ret = NULL;                                           \
+                                                                        \
+        if (c_self)                                                     \
+            ret = pyname(c_self);                                       \
+        else                                                            \
+            PyErr_SetString(PyExc_TypeError, "Unsupported operand types"); \
+                                                                        \
+        if (c_self != self) Py_XDECREF(c_self);                         \
+        return ret;                                                     \
+    }
+
+#define NORMALIZED_BINARY_OPERATION(name, pyname)                       \
+    PyObject *EmacsObject_ ## name(PyObject *self, PyObject *other)          \
+    {                                                                   \
+        PyObject *c_self = self, *c_other = other;                      \
+        if (PyObject_TypeCheck(self, &EmacsObjectType))                 \
+            c_self = normalize(c_self);                                 \
+        if (PyObject_TypeCheck(other, &EmacsObjectType))                \
+            c_other = normalize(c_other);                               \
+                                                                        \
+        PyObject *ret = NULL;                                           \
+                                                                        \
+        if (c_self && c_other)                                          \
+            ret = pyname(c_self, c_other);                              \
+        else                                                            \
+            PyErr_SetString(PyExc_TypeError, "Unsupported operand types"); \
+                                                                        \
+        if (c_self != self) Py_XDECREF(c_self);                         \
+        if (c_other != other) Py_XDECREF(c_other);                      \
+        return ret;                                                     \
+    }
 
 PyObject *emacs_object(emacs_value val)
 {
@@ -141,13 +190,13 @@ PyObject *EmacsObject_repr(PyObject *self)
     return ret;
 }
 
-bool _cmp(emacs_value a, emacs_value b, int op, bool *error)
+static bool cmp(emacs_value a, emacs_value b, int op, bool *error)
 {
-    *error = false;
-
     // Emacs doesn't have a not-equals function, so let's just negate equality
     if (op == Py_NE)
-        return !_cmp(a, b, Py_EQ, error);
+        return !cmp(a, b, Py_EQ, error);
+
+    *error = false;
 
     // Choose which equality predicate to use based on the types involved. This
     // should make equality behave as close as possible to Python equality.
@@ -225,7 +274,7 @@ PyObject *EmacsObject_cmp(PyObject *pa, PyObject *pb, int op)
         b = ((EmacsObject *)pb)->val;
 
     bool error;
-    bool ret = _cmp(a, b, op, &error);
+    bool ret = cmp(a, b, op, &error);
 
     if (error) {
         PyErr_SetString(PyExc_TypeError, "Unorderable types");
@@ -235,6 +284,59 @@ PyObject *EmacsObject_cmp(PyObject *pa, PyObject *pb, int op)
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;
 }
+
+static PyObject *normalize(PyObject *self)
+{
+    emacs_value val = ((EmacsObject *)self)->val;
+
+    if (em_integerp(val))
+        return PyNumber_Long(self);
+    else if (em_floatp(val))
+        return PyNumber_Float(self);
+    else if (em_stringp(val))
+        return PyObject_Str(self);
+    return NULL;
+}
+
+NORMALIZED_BINARY_OPERATION(add, PyNumber_Add)
+NORMALIZED_BINARY_OPERATION(subtract, PyNumber_Subtract)
+NORMALIZED_BINARY_OPERATION(multiply, PyNumber_Multiply)
+NORMALIZED_BINARY_OPERATION(remainder, PyNumber_Remainder)
+NORMALIZED_BINARY_OPERATION(divmod, PyNumber_Divmod)
+
+PyObject *EmacsObject_power(PyObject *self, PyObject *other, PyObject *mod)
+{
+    PyObject *c_self = self, *c_other = other, *c_mod = mod;
+
+    if (PyObject_TypeCheck(self, &EmacsObjectType))
+        c_self = normalize(c_self);
+    if (PyObject_TypeCheck(other, &EmacsObjectType))
+        c_other = normalize(c_other);
+    if (PyObject_TypeCheck(mod, &EmacsObjectType))
+        c_mod = normalize(c_mod);
+
+    PyObject *ret = NULL;
+
+    if (c_self && c_other && c_mod)
+        ret = PyNumber_Power(c_self, c_other, c_mod);
+    else
+        PyErr_SetString(PyExc_TypeError, "Unsupported operand types");
+
+    if (c_self != self) Py_XDECREF(c_self);
+    if (c_other != other) Py_XDECREF(c_other);
+    if (c_mod != mod) Py_XDECREF(c_mod);
+
+    return ret;
+}
+
+NORMALIZED_UNARY_OPERATION(negative, PyNumber_Negative)
+NORMALIZED_UNARY_OPERATION(positive, PyNumber_Positive)
+NORMALIZED_UNARY_OPERATION(absolute, PyNumber_Absolute)
+NORMALIZED_UNARY_OPERATION(invert, PyNumber_Invert)
+NORMALIZED_BINARY_OPERATION(lshift, PyNumber_Lshift)
+NORMALIZED_BINARY_OPERATION(rshift, PyNumber_Rshift)
+NORMALIZED_BINARY_OPERATION(floordivide, PyNumber_FloorDivide)
+NORMALIZED_BINARY_OPERATION(truedivide, PyNumber_TrueDivide)
 
 PyObject *EmacsObject_type(PyObject *self)
 {
@@ -284,19 +386,19 @@ PyMethodDef EmacsObject_methods[] = {
 };
 
 static PyNumberMethods EmacsObject_NumMethods[] = {
-    0,                                // nb_add
-    0,                                // nb_subtract
-    0,                                // nb_multiply
-    0,                                // nb_remainder
-    0,                                // nb_divmod
-    0,                                // nb_power
-    0,                                // nb_negative
-    0,                                // nb_positive
-    0,                                // nb_absolute
+    EmacsObject_add,                  // nb_add
+    EmacsObject_subtract,             // nb_subtract
+    EmacsObject_multiply,             // nb_multiply
+    EmacsObject_remainder,            // nb_remainder
+    EmacsObject_divmod,               // nb_divmod
+    EmacsObject_power,                // nb_power
+    EmacsObject_negative,             // nb_negative
+    EmacsObject_positive,             // nb_positive
+    EmacsObject_absolute,             // nb_absolute
     (inquiry)EmacsObject_bool,        // nb_bool
-    0,                                // nb_invert
-    0,                                // nb_lshift
-    0,                                // nb_rshift
+    EmacsObject_invert,               // nb_invert
+    EmacsObject_lshift,               // nb_lshift
+    EmacsObject_rshift,               // nb_rshift
     0,                                // nb_and
     0,                                // nb_xor
     0,                                // nb_or
@@ -313,12 +415,12 @@ static PyNumberMethods EmacsObject_NumMethods[] = {
     0,                                // nb_inplace_and
     0,                                // nb_inplace_xor
     0,                                // nb_inplace_or
-    0,                                // nb_floor_divide
-    0,                                // nb_true_divide
+    EmacsObject_floordivide,          // nb_floor_divide
+    EmacsObject_truedivide,           // nb_true_divide
     0,                                // nb_inplace_floor_divide
     0,                                // nb_inplace_true_divide
     0,                                // nb_index
-    0,                                // nb_matrix_multiple
+    0,                                // nb_matrix_multiply
     0,                                // nb_inplace_matrix_multiply
 };
 

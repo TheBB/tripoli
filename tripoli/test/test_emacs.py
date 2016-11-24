@@ -364,3 +364,44 @@ def test_cmp():
         e.str('a') > []
     with pytest.raises(TypeError):
         e.str('a') >= ()
+
+
+def test_num():
+    assert e.int(0) + e.int(1) == 1
+    assert e.int(3) + 8 == 11
+    assert 7 + e.float(-3.1) == 3.9
+    assert 'alpha' + e.str('bravo') == 'alphabravo'
+
+    assert e.int(8) - e.int(1) == 7
+    assert 13 - e.float(2.2) == 10.8
+
+    assert e.int(5) * e.float(2.2) == 11.0
+    assert 7 * e.int(2) == 14
+
+    assert e.int(17) // 3 == 5
+    assert 7 / e.int(2) == 3.5
+    assert e.int(8) / e.int(-1) == -8.0
+
+    assert divmod(e.int(10), e.int(3)) == (3, 1)
+
+    assert 2 ** e.int(3) == 8
+    assert e.float(3.0) ** e.int(3) == 27.0
+    assert pow(e.int(2), e.int(4), e.int(5)) == 1
+
+    assert -e.int(2) == -2
+    assert -e.float(-2.2) == 2.2
+
+    assert +e.int(-2) == -2
+    assert ~e.int(1) == ~1
+
+    assert (e.int(8) << 1) == 16
+    assert 8 >> e.int(1) == 4
+
+    with pytest.raises(TypeError):
+        13 - e.str('a')
+    with pytest.raises(TypeError):
+        e.intern('a') + 2
+    with pytest.raises(TypeError):
+        2 << e.intern('b')
+    with pytest.raises(TypeError):
+        pow(1, 2, e.intern('q'))
