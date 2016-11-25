@@ -3,7 +3,7 @@ import pytest
 import sys
 
 
-def run_tests():
+def run_tests(args):
     try:
         # Check that we are running embedded
         import emacs_raw
@@ -16,7 +16,7 @@ def run_tests():
             sys.argv = ['tripoli']
 
             module = abspath(join(dirname(__file__), '..'))
-            pytest.main(['-v', module])
+            pytest.main(args + [module])
 
         except Exception as e:
             print('{}: {}'.format(e.__class__.__name__, e))

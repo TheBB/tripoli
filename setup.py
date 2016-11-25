@@ -15,5 +15,6 @@ setup(
         'console_scripts': ['tripoli=tripoli_run.__main__:main'],
     },
     install_requires=[
+        'click',
     ],
 )
