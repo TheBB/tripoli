@@ -5,6 +5,7 @@ from emacs import package
 require('package')
 
 archives = AssociationList(package.archives, inplace=True)
+archives.clear()
 archives.update({
     'gnu': 'https://elpa.gnu.org/packages/',
     'org': 'http://orgmode.org/elpa/',

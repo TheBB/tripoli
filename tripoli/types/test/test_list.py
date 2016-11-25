@@ -95,3 +95,33 @@ def test_empty():
     l.push(_('b'))
     l.push(_('c'))
     assert list(l) == py_list('cba')
+
+
+def test_insert():
+    l = List()
+
+    with pytest.raises(TypeError):
+        l.insert(0, _('a'))
+
+    setq(_('test'), er.intern('nil'))
+    l = List(_('test'))
+    l.insert(0, _('a'))
+    l.insert(0, _('b'))
+    l.insert(1, _('c'))
+    assert list(l) == py_list('bca')
+
+    l.insert(3, _('d'))
+    assert list(l) == py_list('bcad')
+
+
+def test_clear():
+    eo = em_list(ascii_lowercase)
+    l = List(eo)
+
+    with pytest.raises(TypeError):
+        l.clear()
+
+    setq(_('test'), eo)
+    l = List(_('test'))
+    l.clear()
+    assert list(l) == []

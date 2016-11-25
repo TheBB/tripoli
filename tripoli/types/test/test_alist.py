@@ -144,3 +144,20 @@ def test_iter():
         (_('b'), 2),
         (_('c'), 3),
     ]
+
+
+def test_clear():
+    eo = mklist(
+        cons(_('a'), er.int(1)),
+        cons(_('b'), er.int(2)),
+        cons(_('c'), er.int(3)),
+    )
+    alist = AssociationList(eo)
+
+    with pytest.raises(TypeError):
+        alist.clear()
+
+    setq(_('test'), eo)
+    alist = AssociationList(_('test'))
+    alist.clear()
+    assert list(alist) == []

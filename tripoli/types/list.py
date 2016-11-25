@@ -1,9 +1,10 @@
-from ..util import PlaceOrSymbol, emacsify_args
+from collections.abc import MutableSequence
 
+from ..util import PlaceOrSymbol, emacsify_args
 from emacs import car, cdr, cons, length, setcar, setcdr
 
 
-class List(PlaceOrSymbol):
+class List(PlaceOrSymbol, MutableSequence):
 
     def __init__(self, place=None):
         PlaceOrSymbol.__init__(self, place)
@@ -19,6 +20,25 @@ class List(PlaceOrSymbol):
             if not self.bindable:
                 raise TypeError("Can't push to an empty non-bound list")
             self.bind(cons(value, self.place))
+
+    @emacsify_args(only={2})
+    def insert(self, index, value):
+        if index == 0:
+            self.push(value)
+            return
+        prev = self.cell(index - 1)
+        cell = cdr(prev)
+        if cell:
+            tail = cons(car(cell), cdr(cell))
+            setcar(cell, value)
+            setcdr(cell, tail)
+        else:
+            setcdr(prev, cons(value, None))
+
+    def clear(self):
+        if not self.bindable:
+            raise TypeError("Can't delete first element of a non-bound list")
+        self.bind(None)
 
     def cell(self, key):
         p = self.place
