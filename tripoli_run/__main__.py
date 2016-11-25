@@ -7,6 +7,10 @@ import textwrap
 import click
 
 
+def emacs_escape(s):
+    return s.replace('\\', r'\\').replace('"', r'\"')
+
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 def main(ctx):
@@ -36,10 +40,7 @@ def test(ctx, extra_args):
     from tripoli.test import run_tests
     run_tests([{}])
     """)
-
-    # The fingers-crossed method of string escaping
-    test_code = test_code.format(','.join("'{}'".format(c) for c in extra_args))
-
+    test_code = test_code.format(','.join(emacs_escape(repr(c)) for c in extra_args))
     args = ctx.obj['args']
     args.insert(1, '--batch')
     args.extend(['--eval', '(tripoli-run-string "{}")'.format(test_code),
