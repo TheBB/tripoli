@@ -42,55 +42,6 @@
         Py_RETURN_FALSE;                                        \
     }
 
-bool propagate_python_error()
-{
-    // Catch all exceptions
-    // PyErr_Fetch steals the references and clears the error indicator
-    PyObject *etype, *eval, *etb;
-    PyErr_Fetch(&etype, &eval, &etb);
-    if (etype) {
-        PyObject *args = PyObject_GetAttrString(eval, "args");
-        PyObject *pys, *pyd;
-        char *msg;
-
-        // If the exception is of type EmacsSignal or EmacsThrow, and was raised
-        // with two arguments, both of which are Emacs objects, we can signal or
-        // throw a corresponding non-local exit in Emacs
-        if ((etype == EmacsSignal || etype == EmacsThrow)
-            && PyObject_TypeCheck(args, &PyTuple_Type)
-            && PyTuple_Size(args) >= 2
-            && (pys = PyTuple_GetItem(args, 0))
-            && PyObject_TypeCheck(pys, &EmacsObjectType)
-            && (pyd = PyTuple_GetItem(args, 1))
-            && PyObject_TypeCheck(pyd, &EmacsObjectType))
-        {
-            emacs_value symbol = ((EmacsObject *)pys)->val;
-            emacs_value data = ((EmacsObject *)pyd)->val;
-            if (etype == EmacsSignal)
-                em_signal(symbol, data);
-            else if (etype == EmacsThrow)
-                em_throw(symbol, data);
-            Py_DECREF(etype);
-            Py_DECREF(eval);
-            Py_DECREF(etb);
-            return true;
-        }
-
-        // Otherwise, simply signal an error, with the error message equal to
-        // the exception argument, if any
-        if (!PyArg_ParseTuple(args, "s", &msg))
-            msg = "An unknown error occured";
-        em_error(msg);
-
-        Py_DECREF(etype);
-        Py_DECREF(eval);
-        Py_DECREF(etb);
-        return true;
-    }
-
-    return false;
-}
-
 emacs_value call_func(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data)
 {
     SET_ENV(env);

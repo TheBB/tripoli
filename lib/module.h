@@ -17,17 +17,6 @@
  */
 emacs_value call_func(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data);
 
-/**
- * \brief Check for Python errors having been thrown.
- *
- * At any time, this function may be called to check whether the Python error
- * indicator is set. If it is, the error is converted to an Emacs non-local exit
- * signal as appropriate, and the Python error indicator is cleared.
- *
- * \return True if an error was present, false otherwise.
- */
-bool propagate_python_error();
-
 DOCSTRING(py_intern,
           "intern(name)\n\n"
           "Creates an Emacs object corresponding to the interned symbol with the given\n"

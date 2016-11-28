@@ -202,23 +202,6 @@ bool em_functionp(emacs_value val);
 // Function calling and error reporting
 
 /**
- * \brief Call a function.
- *
- * If exit_signal is not NULL, exit information is returned.
- *
- * \param func Emacs object to call (must be callable).
- * \param nargs Number of arguments to pass.
- * \param args Argument list.
- * \param exit_signal If not NULL, the exit information is returned here.
- * \param exit_symbol The exit symbol.
- * \param exit_data The exit data.
- * \return Function return value.
- */
-emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args,
-                       enum emacs_funcall_exit *exit_signal,
-                       emacs_value *exit_symbol, emacs_value *exit_data);
-
-/**
  * \brief Call a function, without error checking.
  *
  * \param func Emacs object to call (must be callable).
@@ -226,22 +209,22 @@ emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args,
  * \param args Argument list.
  * \return Function return value.
  */
-emacs_value em_funcall_naive(emacs_value func, int nargs, emacs_value *args);
+emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args);
 
 /**
  * \brief Call a named function with no arguments.
  */
-emacs_value em_funcall_naive_0(char *func);
+emacs_value em_funcall_0(char *func);
 
 /**
  * \brief Call a named function with one argument.
  */
-emacs_value em_funcall_naive_1(char *func, emacs_value arg);
+emacs_value em_funcall_1(char *func, emacs_value arg);
 
 /**
  * Call a named function with two arguments.
  */
-emacs_value em_funcall_naive_2(char *func, emacs_value arg1, emacs_value arg2);
+emacs_value em_funcall_2(char *func, emacs_value arg1, emacs_value arg2);
 
 /**
  * \brief Signal a non-local exit.

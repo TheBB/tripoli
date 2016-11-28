@@ -8,7 +8,7 @@
 #define PREDICATE(name, test)                                   \
     bool em_ ## name(emacs_value val)                           \
     {                                                           \
-        return em_truthy(em_funcall_naive_1(test, val));        \
+        return em_truthy(em_funcall_1(test, val));        \
     }
 
 #define SIMPLE_PREDICATE(name) PREDICATE(name, #name)
@@ -17,7 +17,7 @@
     bool em_ ## name(emacs_value a, emacs_value b)              \
     {                                                           \
         emacs_value eq = em_intern(lisp);                       \
-        return em_truthy(em_funcall_naive_2(lisp, a, b));       \
+        return em_truthy(em_funcall_2(lisp, a, b));       \
     }
 
 
@@ -35,7 +35,7 @@ emacs_env *get_environment()
 
 void em_provide(char *feature_name)
 {
-    em_funcall_naive_1("provide", em_intern(feature_name));
+    em_funcall_1("provide", em_intern(feature_name));
 }
 
 emacs_value em_intern(char *name)
@@ -66,7 +66,7 @@ emacs_value em_function(em_func func, ptrdiff_t min_nargs, ptrdiff_t max_nargs,
 
 char *em_symbol_name(emacs_value val)
 {
-    emacs_value name = em_funcall_naive_1("symbol-name", val);
+    emacs_value name = em_funcall_1("symbol-name", val);
     return em_extract_str(name);
 }
 
@@ -91,7 +91,7 @@ double em_extract_float(emacs_value val)
 
 char *em_type_as_str(emacs_value val)
 {
-    emacs_value symbol = em_funcall_naive_1("type-of", val);
+    emacs_value symbol = em_funcall_1("type-of", val);
     return em_symbol_name(symbol);
 }
 
@@ -119,40 +119,25 @@ SIMPLE_PREDICATE(vectorp)
 SIMPLE_PREDICATE(listp)
 SIMPLE_PREDICATE(functionp)
 
-emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args,
-                       enum emacs_funcall_exit *exit_signal,
-                       emacs_value *exit_symbol, emacs_value *exit_data)
+emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args)
 {
-    emacs_value ret = env->funcall(env, func, nargs, args);
-    if (exit_signal) {
-        *exit_signal = env->non_local_exit_check(env);
-        if (*exit_signal) {
-            env->non_local_exit_get(env, exit_symbol, exit_data);
-            env->non_local_exit_clear(env);
-        }
-    }
-    return ret;
+    return env->funcall(env, func, nargs, args);
 }
 
-emacs_value em_funcall_naive(emacs_value func, int nargs, emacs_value *args)
+emacs_value em_funcall_0(char *func)
 {
-    return em_funcall(func, nargs, args, NULL, NULL, NULL);
+    return em_funcall(em_intern(func), 0, NULL);
 }
 
-emacs_value em_funcall_naive_0(char *func)
+emacs_value em_funcall_1(char *func, emacs_value arg)
 {
-    return em_funcall_naive(em_intern(func), 0, NULL);
+    return em_funcall(em_intern(func), 1, &arg);
 }
 
-emacs_value em_funcall_naive_1(char *func, emacs_value arg)
-{
-    return em_funcall_naive(em_intern(func), 1, &arg);
-}
-
-emacs_value em_funcall_naive_2(char *func, emacs_value arg1, emacs_value arg2)
+emacs_value em_funcall_2(char *func, emacs_value arg1, emacs_value arg2)
 {
     emacs_value args[] = {arg1, arg2};
-    return em_funcall_naive(em_intern(func), 2, args);
+    return em_funcall(em_intern(func), 2, args);
 }
 
 void em_signal(emacs_value symbol, emacs_value data)
@@ -168,7 +153,7 @@ void em_throw(emacs_value symbol, emacs_value data)
 void em_error(char *message)
 {
     emacs_value emsg = em_str(message);
-    emacs_value data = em_funcall_naive_1("list", emsg);
+    emacs_value data = em_funcall_1("list", emsg);
     em_signal(em_intern("error"), data);
 }
 
@@ -186,15 +171,15 @@ EQUALITY(string_gt, "string>")
 
 emacs_value em_eval(char *c)
 {
-    emacs_value sexp = em_funcall_naive_1("read", em_str(c));
+    emacs_value sexp = em_funcall_1("read", em_str(c));
     if (!sexp)
         return NULL;
-    return em_funcall_naive_1("eval", sexp);
+    return em_funcall_1("eval", sexp);
 }
 
 char *em_print_obj(emacs_value obj)
 {
-    emacs_value ret = em_funcall_naive_2("format", em_str("%S"), obj);
+    emacs_value ret = em_funcall_2("format", em_str("%S"), obj);
     return em_extract_str(ret);
 }
 
@@ -202,36 +187,36 @@ bool em_interactive(emacs_value func, emacs_value spec)
 {
     if (!em_consp(func))
         return false;
-    if (!em_eq(em_intern("lambda"), em_funcall_naive_1("car", func)))
+    if (!em_eq(em_intern("lambda"), em_funcall_1("car", func)))
         return false;
 
     emacs_value ispec;
     if (spec)
-        ispec = em_funcall_naive_2("list", em_intern("interactive"), spec);
+        ispec = em_funcall_2("list", em_intern("interactive"), spec);
     else
-        ispec = em_funcall_naive_1("list", em_intern("interactive"));
+        ispec = em_funcall_1("list", em_intern("interactive"));
 
     // Skip over lambda and argument list
-    func = em_funcall_naive_1("cdr", func);
+    func = em_funcall_1("cdr", func);
     emacs_value pfunc = func;
-    func = em_funcall_naive_1("cdr", func);
+    func = em_funcall_1("cdr", func);
 
     // Skip over docstring if it's there
-    if (em_stringp(em_funcall_naive_1("car", func))) {
+    if (em_stringp(em_funcall_1("car", func))) {
         pfunc = func;
-        func = em_funcall_naive_1("cdr", func);
+        func = em_funcall_1("cdr", func);
     }
 
     // If looking at an interactive spec, replace it
-    if (em_consp(em_funcall_naive_1("car", func)) &&
-        em_eq(em_intern("interactive"), em_funcall_naive_1("caar", func)))
+    if (em_consp(em_funcall_1("car", func)) &&
+        em_eq(em_intern("interactive"), em_funcall_1("caar", func)))
     {
-        em_funcall_naive_2("setcar", func, ispec);
+        em_funcall_2("setcar", func, ispec);
         return true;
     }
 
     // If not, add an interactive spec
-    emacs_value new_cons = em_funcall_naive_2("cons", ispec, func);
-    em_funcall_naive_2("setcdr", pfunc, new_cons);
+    emacs_value new_cons = em_funcall_2("cons", ispec, func);
+    em_funcall_2("setcdr", pfunc, new_cons);
     return true;
 }
