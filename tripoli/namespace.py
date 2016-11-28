@@ -130,7 +130,7 @@ class EmacsNamespace:
         return found
 
     def __function_symbol(self, exists=True):
-        return self.__symbol_satisfying(emacs_raw.intern('fboundp'), exists=exists)
+        return self.__symbol_satisfying(emacs_raw.intern('functionp'), exists=exists)
 
     def __variable_symbol(self, exists=True):
         return self.__symbol_satisfying(emacs_raw.intern('boundp'), exists=exists)

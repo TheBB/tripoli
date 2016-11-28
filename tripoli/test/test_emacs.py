@@ -3,6 +3,14 @@ import pytest
 import emacs_raw as e
 
 
+def test_constructor():
+    assert e.eq(e.intern('nil'), e.EmacsObject('nil', prefer_symbol=True))
+    assert not e.eq(e.intern('nil'), e.EmacsObject('nil'))
+    assert e.str('nil') == e.EmacsObject('nil')
+    assert e.int(2) == e.EmacsObject(2)
+    assert e.float(2.2) == e.EmacsObject(2.2, prefer_symbol=True)
+
+
 def test_nil():
     nil = e.intern('nil')
     assert e.eq(nil, e.intern('nil'))
