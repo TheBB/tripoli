@@ -229,6 +229,21 @@ emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args,
 emacs_value em_funcall_naive(emacs_value func, int nargs, emacs_value *args);
 
 /**
+ * \brief Call a named function with no arguments.
+ */
+emacs_value em_funcall_naive_0(char *func);
+
+/**
+ * \brief Call a named function with one argument.
+ */
+emacs_value em_funcall_naive_1(char *func, emacs_value arg);
+
+/**
+ * Call a named function with two arguments.
+ */
+emacs_value em_funcall_naive_2(char *func, emacs_value arg1, emacs_value arg2);
+
+/**
  * \brief Signal a non-local exit.
  */
 void em_signal(emacs_value symbol, emacs_value data);

@@ -8,8 +8,7 @@
 #define PREDICATE(name, test)                                   \
     bool em_ ## name(emacs_value val)                           \
     {                                                           \
-        emacs_value pred = em_intern(test);                     \
-        return em_truthy(em_funcall_naive(pred, 1, &val));      \
+        return em_truthy(em_funcall_naive_1(test, val));        \
     }
 
 #define SIMPLE_PREDICATE(name) PREDICATE(name, #name)
@@ -18,8 +17,7 @@
     bool em_ ## name(emacs_value a, emacs_value b)              \
     {                                                           \
         emacs_value eq = em_intern(lisp);                       \
-        emacs_value args[] = {a, b};                            \
-        return em_truthy(em_funcall_naive(eq, 2, args));        \
+        return em_truthy(em_funcall_naive_2(lisp, a, b));       \
     }
 
 
@@ -37,9 +35,7 @@ emacs_env *get_environment()
 
 void em_provide(char *feature_name)
 {
-    emacs_value provide = em_intern("provide");
-    emacs_value feature = em_intern(feature_name);
-    em_funcall_naive(provide, 1, &feature);
+    em_funcall_naive_1("provide", em_intern(feature_name));
 }
 
 emacs_value em_intern(char *name)
@@ -70,8 +66,7 @@ emacs_value em_function(em_func func, ptrdiff_t min_nargs, ptrdiff_t max_nargs,
 
 char *em_symbol_name(emacs_value val)
 {
-    emacs_value symbol_name = em_intern("symbol-name");
-    emacs_value name = em_funcall_naive(symbol_name, 1, &val);
+    emacs_value name = em_funcall_naive_1("symbol-name", val);
     return em_extract_str(name);
 }
 
@@ -96,8 +91,7 @@ double em_extract_float(emacs_value val)
 
 char *em_type_as_str(emacs_value val)
 {
-    emacs_value type_of = em_intern("type-of");
-    emacs_value symbol = em_funcall_naive(type_of, 1, &val);
+    emacs_value symbol = em_funcall_naive_1("type-of", val);
     return em_symbol_name(symbol);
 }
 
@@ -145,6 +139,22 @@ emacs_value em_funcall_naive(emacs_value func, int nargs, emacs_value *args)
     return em_funcall(func, nargs, args, NULL, NULL, NULL);
 }
 
+emacs_value em_funcall_naive_0(char *func)
+{
+    return em_funcall_naive(em_intern(func), 0, NULL);
+}
+
+emacs_value em_funcall_naive_1(char *func, emacs_value arg)
+{
+    return em_funcall_naive(em_intern(func), 1, &arg);
+}
+
+emacs_value em_funcall_naive_2(char *func, emacs_value arg1, emacs_value arg2)
+{
+    emacs_value args[] = {arg1, arg2};
+    return em_funcall_naive(em_intern(func), 2, args);
+}
+
 void em_signal(emacs_value symbol, emacs_value data)
 {
     env->non_local_exit_signal(env, symbol, data);
@@ -157,9 +167,8 @@ void em_throw(emacs_value symbol, emacs_value data)
 
 void em_error(char *message)
 {
-    emacs_value list = em_intern("list");
     emacs_value emsg = em_str(message);
-    emacs_value data = em_funcall_naive(list, 1, &emsg);
+    emacs_value data = em_funcall_naive_1("list", emsg);
     em_signal(em_intern("error"), data);
 }
 
@@ -177,21 +186,14 @@ EQUALITY(string_gt, "string>")
 
 emacs_value em_eval(char *c)
 {
-    emacs_value read = em_intern("read");
-    emacs_value eval = em_intern("eval");
-    emacs_value code = em_str(c);
-    emacs_value sexp = em_funcall_naive(read, 1, &code);
+    emacs_value sexp = em_funcall_naive_1("read", em_str(c));
     if (!sexp)
         return NULL;
-    emacs_value ret = em_funcall_naive(eval, 1, &sexp);
-    return ret;
+    return em_funcall_naive_1("eval", sexp);
 }
 
 char *em_print_obj(emacs_value obj)
 {
-    emacs_value format_fcn = em_intern("format");
-    emacs_value fmt_str = env->make_string(env, "%S", 2);
-    emacs_value args[] = {fmt_str, obj};
-    emacs_value ret = em_funcall_naive(format_fcn, 2, args);
+    emacs_value ret = em_funcall_naive_2("format", em_str("%S"), obj);
     return em_extract_str(ret);
 }
