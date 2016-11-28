@@ -7,29 +7,15 @@ from emacs import cons, list as mklist, symbol_value, set as setq
 
 
 def emacsify(s, prefer_symbol=False):
-    if isinstance(s, EmacsObject):
-        return s
-    if s == False or s is None:
-        return intern('nil')
-    if s == True:
-        return intern('t')
-    if prefer_symbol:
-        if isinstance(s, EmacsNamespace):
-            return s.ds_
-        if isinstance(s, str):
-            return er.intern(s)
     if isinstance(s, EmacsNamespace):
+        if prefer_symbol:
+            return s.ds_
         return s.vb_
-    if isinstance(s, str):
-        return er.str(s)
-    if isinstance(s, int):
-        return er.int(s)
-    if isinstance(s, float):
-        return er.float(s)
     if isinstance(s, tuple) and len(s) == 2:
         return cons(emacsify(s[0]), emacsify(s[1]))
     if isinstance(s, tuple) or isinstance(s, list):
         return mklist(*(emacsify(v) for v in s))
+    return EmacsObject(s, prefer_symbol=prefer_symbol)
     raise Exception('Unable to emacsify value')
 
 

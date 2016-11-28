@@ -11,17 +11,6 @@
 #define METHOD(name, args)                                              \
     {#name, (PyCFunction)EmacsObject_ ## name, METH_ ## args, __doc_EmacsObject_ ## name}
 
-#define NORMALIZE(name, target)                                         \
-    do {                                                                \
-        if (PyObject_TypeCheck(name, &EmacsObjectType)) {               \
-            target = normalize(name);                                   \
-            if (!target) {                                              \
-                PyErr_SetString(PyExc_TypeError, "Unsupported operand for +"); \
-                return NULL;                                            \
-            }                                                           \
-        }                                                               \
-    } while(0)
-
 #define NORMALIZED_UNARY_OPERATION(name, pyname)                        \
     PyObject *EmacsObject_ ## name(PyObject *self)                      \
     {                                                                   \
@@ -41,7 +30,7 @@
     }
 
 #define NORMALIZED_BINARY_OPERATION(name, pyname)                       \
-    PyObject *EmacsObject_ ## name(PyObject *self, PyObject *other)          \
+    PyObject *EmacsObject_ ## name(PyObject *self, PyObject *other)     \
     {                                                                   \
         PyObject *c_self = self, *c_other = other;                      \
         if (PyObject_TypeCheck(self, &EmacsObjectType))                 \
@@ -61,9 +50,8 @@
         return ret;                                                     \
     }
 
-PyObject *emacs_object(emacs_value val)
+PyObject *emacs_object(PyTypeObject *type, emacs_value val)
 {
-    PyTypeObject *type = &EmacsObjectType;
     EmacsObject *self = (EmacsObject *)type->tp_alloc(type, 0);
     if (self)
         self->val = val;
@@ -74,7 +62,42 @@ void EmacsObject_dealloc(EmacsObject *self) {}
 
 PyObject *EmacsObject_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    return emacs_object(em_intern("nil"));
+    if (PyTuple_Size(args) == 0)
+        return emacs_object(type, em_intern("nil"));
+    PyObject *arg;
+    int prefer_symbol = false;
+    char *keywords[] = {"obj", "prefer_symbol", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|$p", keywords, &arg, &prefer_symbol))
+        return NULL;
+    if (PyObject_TypeCheck(arg, &EmacsObjectType)) {
+        emacs_value val = ((EmacsObject *)arg)->val;
+        return emacs_object(type, val);
+    }
+    if (arg == Py_None || arg == Py_False)
+        return emacs_object(type, em_intern("nil"));
+    if (arg == Py_True)
+        return emacs_object(type, em_intern("t"));
+    if (PyLong_Check(arg)) {
+        int overflow;
+        long long val = PyLong_AsLongLongAndOverflow(arg, &overflow);
+        if (PyErr_Occurred() || overflow) return NULL;
+        return emacs_object(type, em_int(val));
+    }
+    if (PyFloat_Check(arg)) {
+        double val = PyFloat_AsDouble(arg);
+        if (PyErr_Occurred()) return NULL;
+        return emacs_object(type, em_float(val));
+    }
+    if (PyUnicode_Check(arg)) {
+        char *val = PyUnicode_AsUTF8AndSize(arg, NULL);
+        if (!val) return NULL;
+        if (prefer_symbol)
+            return emacs_object(type, em_intern(val));
+        return emacs_object(type, em_str(val));
+    }
+
+    PyErr_SetString(PyExc_TypeError, "Unable to coerce to Emacs object");
+    return NULL;
 }
 
 int EmacsObject_bool(PyObject *self)
@@ -155,12 +178,14 @@ PyObject *EmacsObject_call(PyObject *self, PyObject *args, PyObject *kwds)
 
     if (signal) {
         PyObject *type = (signal == emacs_funcall_exit_signal) ? EmacsSignal : EmacsThrow;
-        PyObject *args = Py_BuildValue("(NN)", emacs_object(symbol), emacs_object(data));
+        PyObject *args = Py_BuildValue("(NN)",
+                                       emacs_object(&EmacsObjectType, symbol),
+                                       emacs_object(&EmacsObjectType, data));
         PyErr_SetObject(type, args);
         return NULL;
     }
 
-    return emacs_object(ret);
+    return emacs_object(&EmacsObjectType, ret);
 }
 
 PyObject *EmacsObject_str(PyObject *self)
