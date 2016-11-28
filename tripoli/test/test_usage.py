@@ -1,6 +1,6 @@
 import pytest
 
-import emacs.raw_ as e
+import emacs_raw as e
 import emacs
 from tripoli import UnboundSymbolError
 
@@ -8,7 +8,7 @@ from tripoli import UnboundSymbolError
 def test_funcall():
     sym = emacs.intern(e.str('hello'))
     assert isinstance(sym, e.EmacsObject)
-    assert sym.is_symbol()
+    assert e.symbolp(sym)
     assert str(sym) == 'hello'
 
     with pytest.raises(UnboundSymbolError):
@@ -20,10 +20,10 @@ def test_assign():
 
     emacs.var_name = e.intern('omfg')
     val = value(e.intern('var-name'))
-    assert val.is_symbol()
+    assert e.symbolp(val)
     assert str(val) == 'omfg'
 
     emacs['var-name-'] = e.intern('lol')
     val = value(e.intern('var-name-'))
-    assert val.is_symbol()
+    assert e.symbolp(val)
     assert str(val) == 'lol'

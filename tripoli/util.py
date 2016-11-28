@@ -2,7 +2,7 @@ from emacs_raw import EmacsObject
 import emacs_raw as er
 
 from .namespace import EmacsNamespace
-from emacs_raw import intern
+from emacs_raw import intern, symbolp
 from emacs import cons, list as mklist, symbol_value, set as setq
 
 
@@ -67,7 +67,9 @@ class PlaceOrSymbol:
             self._symbol = place.vs_()
         elif isinstance(place, str):
             self._symbol = er.intern(place)
-        elif isinstance(place, EmacsObject) and not place.is_symbol():
+        elif not isinstance(place, EmacsObject):
+            raise TypeError('Invalid place')
+        elif not symbolp(place):
             self._place = place
         else:
             self._symbol = place

@@ -28,6 +28,19 @@
 #define METHOD(name, args)                                      \
     {#name, py_ ## name, METH_ ## args, __doc_py_ ## name}
 
+#define TYPECHECK(name)                                         \
+    PyObject *py_ ## name(PyObject *self, PyObject *args)       \
+    {                                                           \
+        PyObject *arg;                                          \
+        if (!PyArg_ParseTuple(args, "O", &arg))                 \
+            return NULL;                                        \
+        if (!PyObject_TypeCheck(arg, &EmacsObjectType))         \
+            Py_RETURN_FALSE;                                    \
+        emacs_value val = ((EmacsObject *)arg)->val;            \
+        if (em_ ## name(val))                                   \
+            Py_RETURN_TRUE;                                     \
+        Py_RETURN_FALSE;                                        \
+    }
 
 bool propagate_python_error()
 {
@@ -172,6 +185,17 @@ EQUALITY(ge)
 EQUALITY(string_lt)
 EQUALITY(string_gt)
 
+TYPECHECK(integerp)
+TYPECHECK(floatp)
+TYPECHECK(numberp)
+TYPECHECK(number_or_marker_p)
+TYPECHECK(stringp)
+TYPECHECK(symbolp)
+TYPECHECK(consp)
+TYPECHECK(vectorp)
+TYPECHECK(listp)
+TYPECHECK(functionp)
+
 PyMethodDef methods[] = {
     METHOD(intern, VARARGS),
     METHOD(str, VARARGS),
@@ -189,6 +213,16 @@ PyMethodDef methods[] = {
     METHOD(ge, VARARGS),
     METHOD(string_lt, VARARGS),
     METHOD(string_gt, VARARGS),
+    METHOD(integerp, VARARGS),
+    METHOD(floatp, VARARGS),
+    METHOD(numberp, VARARGS),
+    METHOD(number_or_marker_p, VARARGS),
+    METHOD(stringp, VARARGS),
+    METHOD(symbolp, VARARGS),
+    METHOD(consp, VARARGS),
+    METHOD(vectorp, VARARGS),
+    METHOD(listp, VARARGS),
+    METHOD(functionp, VARARGS),
     {NULL},
 };
 

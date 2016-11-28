@@ -8,15 +8,6 @@
 #define RETURN_TRUE_IF(pred)                                            \
     do {if (pred) { Py_RETURN_TRUE; } else { Py_RETURN_FALSE; }} while (0)
 
-#define EMACSOBJECT_IS(pytype, predicate)               \
-    PyObject *EmacsObject_is_ ## pytype(PyObject *self) \
-    {                                                   \
-        emacs_value obj = ((EmacsObject *)self)->val;   \
-        if (em_ ## predicate(obj))                      \
-            Py_RETURN_TRUE;                             \
-        Py_RETURN_FALSE;                                \
-    }
-
 #define METHOD(name, args)                                              \
     {#name, (PyCFunction)EmacsObject_ ## name, METH_ ## args, __doc_EmacsObject_ ## name}
 
@@ -358,30 +349,9 @@ PyObject *EmacsObject_is_a(PyObject *self, PyObject *args)
     Py_RETURN_FALSE;
 }
 
-EMACSOBJECT_IS(int, integerp)
-EMACSOBJECT_IS(float, floatp)
-EMACSOBJECT_IS(number, numberp)
-EMACSOBJECT_IS(number_or_marker, number_or_marker_p)
-EMACSOBJECT_IS(str, stringp)
-EMACSOBJECT_IS(symbol, symbolp)
-EMACSOBJECT_IS(cons, consp)
-EMACSOBJECT_IS(vector, vectorp)
-EMACSOBJECT_IS(list, listp)
-EMACSOBJECT_IS(callable, functionp)
-
-PyMethodDef EmacsObject_methods[] = {
+static PyMethodDef EmacsObject_methods[] = {
     METHOD(type, NOARGS),
     METHOD(is_a, VARARGS),
-    METHOD(is_int, NOARGS),
-    METHOD(is_float, NOARGS),
-    METHOD(is_number, NOARGS),
-    METHOD(is_number_or_marker, NOARGS),
-    METHOD(is_str, NOARGS),
-    METHOD(is_symbol, NOARGS),
-    METHOD(is_cons, NOARGS),
-    METHOD(is_vector, NOARGS),
-    METHOD(is_list, NOARGS),
-    METHOD(is_callable, NOARGS),
     {NULL},
 };
 

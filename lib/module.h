@@ -115,6 +115,56 @@ DOCSTRING(py_string_gt,
           "Equivalent to (string> a b) in elisp.");
 PyObject *py_string_gt(PyObject *self, PyObject *args);
 
+DOCSTRING(py_integerp,
+          "Check whether the object is an Emacs integer.\n\n"
+          "Equivalent to (integerp obj) in elisp.");
+PyObject *py_integerp(PyObject *self, PyObject *args);
+
+DOCSTRING(py_floatp,
+          "Check whether the object is an Emacs float.\n\n"
+          "Equivalent to (floatp obj) in elisp.");
+PyObject *py_floatp(PyObject *self, PyObject *args);
+
+DOCSTRING(py_numberp,
+          "Check whether the object is an Emacs number (integer or float).\n\n"
+          "Equivalent to (numberp obj) in elisp.");
+PyObject *py_numberp(PyObject *self, PyObject *args);
+
+DOCSTRING(py_number_or_marker_p,
+          "Check whether the object is an Emacs number or a marker.\n\n"
+          "Equivalent to (number-or-marker-p obj) in elisp.");
+PyObject *py_number_or_marker_p(PyObject *self, PyObject *args);
+
+DOCSTRING(py_stringp,
+          "Check whether the object is an Emacs string.\n\n"
+          "Equivalent to (stringp obj) in elisp.");
+PyObject *py_stringp(PyObject *self, PyObject *args);
+
+DOCSTRING(py_symbolp,
+          "Check whether the object is an Emacs symbol.\n\n"
+          "Equivalent to (symbolp obj) in elisp.");
+PyObject *py_symbolp(PyObject *self, PyObject *args);
+
+DOCSTRING(py_consp,
+          "Check whether the object is an Emacs cons cell.\n\n"
+          "Equivalent to (consp obj) in elisp.");
+PyObject *py_consp(PyObject *self, PyObject *args);
+
+DOCSTRING(py_vectorp,
+          "Check whether the object is an Emacs vector.\n\n"
+          "Equivalent to (vectorp obj) in elisp.");
+PyObject *py_vectorp(PyObject *self, PyObject *args);
+
+DOCSTRING(py_listp,
+          "Check whether the object is an Emacs list.\n\n"
+          "Equivalent to (listp obj) in elisp.");
+PyObject *py_listp(PyObject *self, PyObject *args);
+
+DOCSTRING(py_functionp,
+          "Check whether the object is an Emacs function.\n\n"
+          "Equivalent to (functionp obj) in elisp.");
+PyObject *py_functionp(PyObject *self, PyObject *args);
+
 extern PyObject *EmacsSignal;
 extern PyObject *EmacsThrow;
 

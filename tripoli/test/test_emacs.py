@@ -14,14 +14,14 @@ def test_nil():
         float(nil)
     assert nil.type() == 'symbol'
     assert nil.is_a('symbol')
-    assert not nil.is_int()
-    assert not nil.is_float()
-    assert not nil.is_str()
-    assert nil.is_symbol()
-    assert not nil.is_cons()
-    assert not nil.is_vector()
-    assert nil.is_list()
-    assert not nil.is_callable()
+    assert not e.integerp(nil)
+    assert not e.floatp(nil)
+    assert not e.stringp(nil)
+    assert e.symbolp(nil)
+    assert not e.consp(nil)
+    assert not e.vectorp(nil)
+    assert e.listp(nil)
+    assert not e.functionp(nil)
     assert not nil
 
 
@@ -36,14 +36,14 @@ def test_intern():
         float(alpha)
     assert alpha.type() == 'symbol'
     assert alpha.is_a('symbol')
-    assert not alpha.is_int()
-    assert not alpha.is_float()
-    assert not alpha.is_str()
-    assert alpha.is_symbol()
-    assert not alpha.is_cons()
-    assert not alpha.is_vector()
-    assert not alpha.is_list()
-    assert not alpha.is_callable()
+    assert not e.integerp(alpha)
+    assert not e.floatp(alpha)
+    assert not e.stringp(alpha)
+    assert e.symbolp(alpha)
+    assert not e.consp(alpha)
+    assert not e.vectorp(alpha)
+    assert not e.listp(alpha)
+    assert not e.functionp(alpha)
     assert alpha
 
     with pytest.raises(TypeError):
@@ -61,14 +61,14 @@ def test_int():
     assert float(one) == 1.0
     assert one.type() == 'integer'
     assert one.is_a('integer')
-    assert one.is_int()
-    assert not one.is_float()
-    assert not one.is_str()
-    assert not one.is_symbol()
-    assert not one.is_cons()
-    assert not one.is_vector()
-    assert not one.is_list()
-    assert not one.is_callable()
+    assert e.integerp(one)
+    assert not e.floatp(one)
+    assert not e.stringp(one)
+    assert not e.symbolp(one)
+    assert not e.consp(one)
+    assert not e.vectorp(one)
+    assert not e.listp(one)
+    assert not e.functionp(one)
     assert one
 
     zero = e.int(0)
@@ -79,14 +79,14 @@ def test_int():
     assert float(zero) == 0.0
     assert zero.type() == 'integer'
     assert zero.is_a('integer')
-    assert zero.is_int()
-    assert not zero.is_float()
-    assert not zero.is_str()
-    assert not zero.is_symbol()
-    assert not zero.is_cons()
-    assert not zero.is_vector()
-    assert not zero.is_list()
-    assert not zero.is_callable()
+    assert e.integerp(zero)
+    assert not e.floatp(zero)
+    assert not e.stringp(zero)
+    assert not e.symbolp(zero)
+    assert not e.consp(zero)
+    assert not e.vectorp(zero)
+    assert not e.listp(zero)
+    assert not e.functionp(zero)
     assert zero
 
     with pytest.raises(TypeError):
@@ -104,14 +104,14 @@ def test_float():
     assert float(one) == 1.1
     assert one.type() == 'float'
     assert one.is_a('float')
-    assert not one.is_int()
-    assert one.is_float()
-    assert not one.is_str()
-    assert not one.is_symbol()
-    assert not one.is_cons()
-    assert not one.is_vector()
-    assert not one.is_list()
-    assert not one.is_callable()
+    assert not e.integerp(one)
+    assert e.floatp(one)
+    assert not e.stringp(one)
+    assert not e.symbolp(one)
+    assert not e.consp(one)
+    assert not e.vectorp(one)
+    assert not e.listp(one)
+    assert not e.functionp(one)
     assert one
 
     zero = e.float(0)
@@ -122,14 +122,14 @@ def test_float():
     assert float(zero) == 0.0
     assert zero.type() == 'float'
     assert zero.is_a('float')
-    assert not zero.is_int()
-    assert zero.is_float()
-    assert not zero.is_str()
-    assert not zero.is_symbol()
-    assert not zero.is_cons()
-    assert not zero.is_vector()
-    assert not zero.is_list()
-    assert not zero.is_callable()
+    assert not e.integerp(zero)
+    assert e.floatp(zero)
+    assert not e.stringp(zero)
+    assert not e.symbolp(zero)
+    assert not e.consp(zero)
+    assert not e.vectorp(zero)
+    assert not e.listp(zero)
+    assert not e.functionp(zero)
     assert zero
 
     with pytest.raises(TypeError):
@@ -147,14 +147,14 @@ def test_string():
         float(alpha)
     assert alpha.type() == 'string'
     assert alpha.is_a('string')
-    assert not alpha.is_int()
-    assert not alpha.is_float()
-    assert alpha.is_str()
-    assert not alpha.is_symbol()
-    assert not alpha.is_cons()
-    assert not alpha.is_vector()
-    assert not alpha.is_list()
-    assert not alpha.is_callable()
+    assert not e.integerp(alpha)
+    assert not e.floatp(alpha)
+    assert e.stringp(alpha)
+    assert not e.symbolp(alpha)
+    assert not e.consp(alpha)
+    assert not e.vectorp(alpha)
+    assert not e.listp(alpha)
+    assert not e.functionp(alpha)
     assert alpha
 
     with pytest.raises(TypeError):
@@ -173,7 +173,7 @@ def test_string():
 
 def test_cons():
     cons = e.intern('cons')
-    assert cons.is_callable()
+    assert e.functionp(cons)
     a = e.intern('a')
     b = e.intern('b')
     c = e.intern('c')
@@ -195,14 +195,14 @@ def test_cons():
         float(cell)
     assert cell.type() == 'cons'
     assert cell.is_a('cons')
-    assert not cell.is_int()
-    assert not cell.is_float()
-    assert not cell.is_str()
-    assert not cell.is_symbol()
-    assert cell.is_cons()
-    assert not cell.is_vector()
-    assert cell.is_list()
-    assert not cell.is_callable()
+    assert not e.integerp(cell)
+    assert not e.floatp(cell)
+    assert not e.stringp(cell)
+    assert not e.symbolp(cell)
+    assert e.consp(cell)
+    assert not e.vectorp(cell)
+    assert e.listp(cell)
+    assert not e.functionp(cell)
     assert cell
 
     assert e.equal(lst, cons(a, cons(b, cons(c, nil))))
@@ -215,20 +215,20 @@ def test_cons():
         float(lst)
     assert lst.type() == 'cons'
     assert lst.is_a('cons')
-    assert not lst.is_int()
-    assert not lst.is_float()
-    assert not lst.is_str()
-    assert not lst.is_symbol()
-    assert lst.is_cons()
-    assert not lst.is_vector()
-    assert lst.is_list()
-    assert not lst.is_callable()
+    assert not e.integerp(lst)
+    assert not e.floatp(lst)
+    assert not e.stringp(lst)
+    assert not e.symbolp(lst)
+    assert e.consp(lst)
+    assert not e.vectorp(lst)
+    assert e.listp(lst)
+    assert not e.functionp(lst)
     assert lst
 
 
 def test_vector():
     vector = e.intern('vector')
-    assert vector.is_callable()
+    assert e.functionp(vector)
     a = e.intern('a')
     b = e.intern('b')
     c = e.intern('c')
@@ -245,20 +245,20 @@ def test_vector():
         float(vec)
     assert vec.type() == 'vector'
     assert vec.is_a('vector')
-    assert not vec.is_int()
-    assert not vec.is_float()
-    assert not vec.is_str()
-    assert not vec.is_symbol()
-    assert not vec.is_cons()
-    assert vec.is_vector()
-    assert not vec.is_list()
-    assert not vec.is_callable()
+    assert not e.integerp(vec)
+    assert not e.floatp(vec)
+    assert not e.stringp(vec)
+    assert not e.symbolp(vec)
+    assert not e.consp(vec)
+    assert e.vectorp(vec)
+    assert not e.listp(vec)
+    assert not e.functionp(vec)
     assert vec
 
 
 def test_list():
     list = e.intern('list')
-    assert list.is_callable()
+    assert e.functionp(list)
     a = e.intern('a')
     b = e.intern('b')
     c = e.intern('c')
@@ -275,14 +275,14 @@ def test_list():
         float(lst)
     assert lst.type() == 'cons'
     assert lst.is_a('cons')
-    assert not lst.is_int()
-    assert not lst.is_float()
-    assert not lst.is_str()
-    assert not lst.is_symbol()
-    assert lst.is_cons()
-    assert not lst.is_vector()
-    assert lst.is_list()
-    assert not lst.is_callable()
+    assert not e.integerp(lst)
+    assert not e.floatp(lst)
+    assert not e.stringp(lst)
+    assert not e.symbolp(lst)
+    assert e.consp(lst)
+    assert not e.vectorp(lst)
+    assert e.listp(lst)
+    assert not e.functionp(lst)
     assert lst
 
 
@@ -290,18 +290,18 @@ def test_function():
     def a():
         return e.int(1)
     func = e.function(a, 0, 0)
-    assert func.is_callable()
+    assert e.functionp(func)
     ret = func()
     assert str(ret) == '1'
-    assert ret.is_int()
+    assert e.integerp(ret)
     assert int(ret) == 1
 
     def b():
         return e.str('alpha')
     func = e.function(b, 0, 0)
-    assert func.is_callable()
+    assert e.functionp(func)
     ret = func()
-    assert ret.is_str()
+    assert e.stringp(ret)
     assert str(ret) == 'alpha'
 
 
