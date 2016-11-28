@@ -11,6 +11,8 @@ def emacsify(s, prefer_symbol=False):
         return s
     if s == False or s is None:
         return intern('nil')
+    if s == True:
+        return intern('t')
     if prefer_symbol:
         if isinstance(s, EmacsNamespace):
             return s.ds_

@@ -111,9 +111,10 @@ emacs_value call_func(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *
 
     // The return value must be an Emacs object, but we allow ourselves the
     // convenience of mapping None to nil
-    if (py_ret == Py_None) {
+    if (py_ret == Py_None || py_ret == Py_False)
         UNSET_ENV_AND_RETURN(em_intern("nil"));
-    }
+    else if (py_ret == Py_True)
+        UNSET_ENV_AND_RETURN(em_intern("t"));
     else if (!PyObject_TypeCheck(py_ret, &EmacsObjectType)) {
         em_error("Function failed to return a valid Emacs object");
         UNSET_ENV_AND_RETURN(NULL);
