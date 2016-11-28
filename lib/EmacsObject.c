@@ -1,5 +1,6 @@
 #include <Python.h>
 
+#include "error.h"
 #include "interface.h"
 #include "main.h"
 #include "module.h"

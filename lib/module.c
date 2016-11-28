@@ -1,5 +1,6 @@
 #include <Python.h>
 
+#include "error.h"
 #include "module.h"
 #include "interface.h"
 #include "EmacsObject.h"

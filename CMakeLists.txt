@@ -7,9 +7,9 @@ if(NOT EMACS_INCLUDE_DIR)
   message(FATAL_ERROR "Could not find emacs-module.h.")
 endif()
 
-find_package(PythonLibs 3.2 REQUIRED)
+find_package(PythonLibs 3.4 REQUIRED)
 
-add_library(tripoli SHARED lib/main.c lib/interface.c lib/module.c lib/EmacsObject.c)
+add_library(tripoli SHARED lib/main.c lib/interface.c lib/module.c lib/EmacsObject.c lib/error.c)
 set_property(TARGET tripoli PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(tripoli PRIVATE
   ${EMACS_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/lib)
