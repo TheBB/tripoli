@@ -329,4 +329,12 @@ emacs_value em_eval(char *code);
  */
 char *em_print_obj(emacs_value obj);
 
+/**
+ * \brief Make a function object (lambda) interactive.
+ *
+ * \param func The function object
+ * \param spec (optional) The interactive spec
+ */
+bool em_interactive(emacs_value func, emacs_value spec);
+
 #endif /* INTERFACE_H */

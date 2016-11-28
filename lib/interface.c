@@ -197,3 +197,41 @@ char *em_print_obj(emacs_value obj)
     emacs_value ret = em_funcall_naive_2("format", em_str("%S"), obj);
     return em_extract_str(ret);
 }
+
+bool em_interactive(emacs_value func, emacs_value spec)
+{
+    if (!em_consp(func))
+        return false;
+    if (!em_eq(em_intern("lambda"), em_funcall_naive_1("car", func)))
+        return false;
+
+    emacs_value ispec;
+    if (spec)
+        ispec = em_funcall_naive_2("list", em_intern("interactive"), spec);
+    else
+        ispec = em_funcall_naive_1("list", em_intern("interactive"));
+
+    // Skip over lambda and argument list
+    func = em_funcall_naive_1("cdr", func);
+    emacs_value pfunc = func;
+    func = em_funcall_naive_1("cdr", func);
+
+    // Skip over docstring if it's there
+    if (em_stringp(em_funcall_naive_1("car", func))) {
+        pfunc = func;
+        func = em_funcall_naive_1("cdr", func);
+    }
+
+    // If looking at an interactive spec, replace it
+    if (em_consp(em_funcall_naive_1("car", func)) &&
+        em_eq(em_intern("interactive"), em_funcall_naive_1("caar", func)))
+    {
+        em_funcall_naive_2("setcar", func, ispec);
+        return true;
+    }
+
+    // If not, add an interactive spec
+    emacs_value new_cons = em_funcall_naive_2("cons", ispec, func);
+    em_funcall_naive_2("setcdr", pfunc, new_cons);
+    return true;
+}

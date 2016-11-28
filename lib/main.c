@@ -117,9 +117,11 @@ int emacs_module_init(struct emacs_runtime *ert)
     em_funcall_naive_2("fset", em_intern("tripoli-run-string"), fcn_string);
 
     emacs_value fcn_file = em_function(run_file, 1, 1, __doc_run_file, NULL);
+    em_interactive(fcn_file, em_str("f"));
     em_funcall_naive_2("fset", em_intern("tripoli-run-file"), fcn_file);
 
     emacs_value fcn_buffer = em_function(run_buffer, 0, 0, __doc_run_buffer, NULL);
+    em_interactive(fcn_buffer, NULL);
     em_funcall_naive_2("fset", em_intern("tripoli-run-buffer"), fcn_buffer);
 
     em_provide("libtripoli");
