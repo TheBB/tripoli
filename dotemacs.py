@@ -19,8 +19,9 @@ archives.update({
 
 package.initialize()
 
-@defun('some-function')
-def test():
+@defun('some-function', interactive='f')
+def test(arg):
+    message(arg)
     return 63
 
 @add_hook('emacs-lisp-mode-hook', name='myfun')
