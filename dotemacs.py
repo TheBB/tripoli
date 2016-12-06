@@ -1,7 +1,7 @@
 from tripoli import require
-from tripoli.decorators import defun
+from tripoli.decorators import defun, add_hook
 from tripoli.types import AssociationList, List
-from emacs import package
+from emacs import package, message
 
 require('package')
 
@@ -14,9 +14,11 @@ archives.update({
 })
 
 package.initialize()
-package.refresh_contents()
 
 @defun('some-function')
 def test():
-    """Here's a docstring."""
     return 63
+
+@add_hook('emacs-lisp-mode-hook', name='myfun')
+def lmfao():
+    message('lmfao')
