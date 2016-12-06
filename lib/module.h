@@ -46,7 +46,7 @@ DOCSTRING(py_function,
           "If exceptions of type Signal or Throw are raised with two arguments, the\n"
           "corresponding effect will be propagated to Emacs. All other exceptions are\n"
           "propagated as error signals.");
-PyObject *py_function(PyObject *self, PyObject *args);
+PyObject *py_function(PyObject *self, PyObject *args, PyObject *kwds);
 
 DOCSTRING(py_eq,
           "eq(a, b)\n\n"

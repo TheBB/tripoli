@@ -319,7 +319,7 @@ def test_function():
 
     def b():
         return e.str('alpha')
-    func = e.function(b, 0, 0)
+    func = e.function(b)
     assert e.functionp(func)
     ret = func()
     assert e.stringp(ret)

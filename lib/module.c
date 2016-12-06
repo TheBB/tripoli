@@ -10,12 +10,10 @@
     PyObject *py_ ## pred(PyObject *self, PyObject *args)               \
     {                                                                   \
         PyObject *pa, *pb;                                              \
-        if (!PyArg_ParseTuple(args, "OO", &pa, &pb))                    \
-            return NULL;                                                \
-        if (!PyObject_TypeCheck(pa, &EmacsObjectType) ||                \
-            !PyObject_TypeCheck(pb, &EmacsObjectType))                  \
+        if (!PyArg_ParseTuple(args, "O!O!",                             \
+                              &EmacsObjectType, &pa,                    \
+                              &EmacsObjectType, &pb))                   \
         {                                                               \
-            PyErr_SetString(PyExc_TypeError, "Arguments must be Emacs objects"); \
             return NULL;                                                \
         }                                                               \
         emacs_value a, b;                                               \
@@ -27,7 +25,7 @@
     }
 
 #define METHOD(name, args)                                      \
-    {#name, py_ ## name, METH_ ## args, __doc_py_ ## name}
+    {#name, (PyCFunction) py_ ## name, (args), __doc_py_ ## name}
 
 #define TYPECHECK(name)                                         \
     PyObject *py_ ## name(PyObject *self, PyObject *args)       \
@@ -106,11 +104,12 @@ PyObject *py_float(PyObject *self, PyObject *args)
     return EmacsObject__make(&EmacsObjectType, ret);
 }
 
-PyObject *py_function(PyObject *self, PyObject *args)
+PyObject *py_function(PyObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *fcn;
-    int min_nargs, max_nargs;
-    if (!PyArg_ParseTuple(args, "Oii", &fcn, &min_nargs, &max_nargs))
+    ptrdiff_t min_nargs = 0, max_nargs = PTRDIFF_MAX;
+    char *keywords[] = {"self", "min_nargs", "max_nargs", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|ii", keywords, &fcn, &min_nargs, &max_nargs))
         return NULL;
     if (!PyCallable_Check(fcn)) {
         PyErr_SetString(PyExc_TypeError, "Parameter must be callable");
@@ -154,32 +153,32 @@ TYPECHECK(listp)
 TYPECHECK(functionp)
 
 PyMethodDef methods[] = {
-    METHOD(intern, VARARGS),
-    METHOD(str, VARARGS),
-    METHOD(int, VARARGS),
-    METHOD(float, VARARGS),
-    METHOD(function, VARARGS),
-    METHOD(eq, VARARGS),
-    METHOD(eql, VARARGS),
-    METHOD(equal, VARARGS),
-    METHOD(equal_sign, VARARGS),
-    METHOD(string_equal, VARARGS),
-    METHOD(lt, VARARGS),
-    METHOD(le, VARARGS),
-    METHOD(gt, VARARGS),
-    METHOD(ge, VARARGS),
-    METHOD(string_lt, VARARGS),
-    METHOD(string_gt, VARARGS),
-    METHOD(integerp, VARARGS),
-    METHOD(floatp, VARARGS),
-    METHOD(numberp, VARARGS),
-    METHOD(number_or_marker_p, VARARGS),
-    METHOD(stringp, VARARGS),
-    METHOD(symbolp, VARARGS),
-    METHOD(consp, VARARGS),
-    METHOD(vectorp, VARARGS),
-    METHOD(listp, VARARGS),
-    METHOD(functionp, VARARGS),
+    METHOD(intern, METH_VARARGS),
+    METHOD(str, METH_VARARGS),
+    METHOD(int, METH_VARARGS),
+    METHOD(float, METH_VARARGS),
+    METHOD(function, METH_VARARGS | METH_KEYWORDS),
+    METHOD(eq, METH_VARARGS),
+    METHOD(eql, METH_VARARGS),
+    METHOD(equal, METH_VARARGS),
+    METHOD(equal_sign, METH_VARARGS),
+    METHOD(string_equal, METH_VARARGS),
+    METHOD(lt, METH_VARARGS),
+    METHOD(le, METH_VARARGS),
+    METHOD(gt, METH_VARARGS),
+    METHOD(ge, METH_VARARGS),
+    METHOD(string_lt, METH_VARARGS),
+    METHOD(string_gt, METH_VARARGS),
+    METHOD(integerp, METH_VARARGS),
+    METHOD(floatp, METH_VARARGS),
+    METHOD(numberp, METH_VARARGS),
+    METHOD(number_or_marker_p, METH_VARARGS),
+    METHOD(stringp, METH_VARARGS),
+    METHOD(symbolp, METH_VARARGS),
+    METHOD(consp, METH_VARARGS),
+    METHOD(vectorp, METH_VARARGS),
+    METHOD(listp, METH_VARARGS),
+    METHOD(functionp, METH_VARARGS),
     {NULL},
 };
 

@@ -1,4 +1,5 @@
 from tripoli import require
+from tripoli.decorators import defun
 from tripoli.types import AssociationList, List
 from emacs import package
 
@@ -14,3 +15,8 @@ archives.update({
 
 package.initialize()
 package.refresh_contents()
+
+@defun('some-function')
+def test():
+    """Here's a docstring."""
+    return 63
