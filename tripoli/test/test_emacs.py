@@ -200,8 +200,7 @@ def test_cons():
     c = e.intern('c')
     nil = e.intern('nil')
 
-    with pytest.raises(ValueError):
-        cons(kwd='value')
+    assert repr(cons(kwd='value')) == '(:kwd . "value")'
 
     cell = cons(a, b)
     lst = cons(a, cons(b, cons(c, nil)))

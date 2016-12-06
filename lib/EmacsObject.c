@@ -148,15 +148,22 @@ PyObject *EmacsObject_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (PyTuple_Size(args) == 0)
         return EmacsObject__make(type, em_intern("nil"));
     PyObject *arg;
-    int prefer_symbol = false;
-    char *keywords[] = {"obj", "prefer_symbol", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|p", keywords, &arg, &prefer_symbol))
+    int prefer_symbol = false, require_symbol = false;
+    char *keywords[] = {"obj", "prefer_symbol", "require_symbol", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|pp", keywords,
+                                     &arg, &prefer_symbol, &require_symbol))
         return NULL;
+    prefer_symbol |= require_symbol;
 
     emacs_value coerced;
     if (!EmacsObject__coerce(arg, prefer_symbol, &coerced)) {
         if (!PyErr_Occurred())
             PyErr_SetString(PyExc_TypeError, "Unable to coerce to Emacs object");
+        return NULL;
+    }
+
+    if (require_symbol && !em_symbolp(coerced)) {
+        PyErr_SetString(PyExc_TypeError, "A symbol is required");
         return NULL;
     }
 
@@ -218,23 +225,38 @@ PyObject *EmacsObject_float(PyObject *self)
 
 PyObject *EmacsObject_call(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    if (kwds && PyDict_Size(kwds) > 0) {
-        PyErr_SetString(PyExc_ValueError, "Keyword arguments not allowed");
-        return NULL;
-    }
-    emacs_value func = ((EmacsObject *)self)->val;
-    Py_ssize_t len = PyTuple_Size(args);
+    Py_ssize_t len = PyTuple_Size(args) + (kwds ? 2 * PyDict_Size(kwds) : 0);
     emacs_value e_arglist[len];
-    for (Py_ssize_t i = 0; i < len; i++) {
+
+    Py_ssize_t i;
+    for (i = 0; i < PyTuple_Size(args); i++) {
         PyObject *arg = PyTuple_GetItem(args, i);
-        if (!PyObject_TypeCheck(arg, &EmacsObjectType)) {
-            PyErr_SetString(PyExc_TypeError, "Arguments must be Emacs objects");
+        if (!EmacsObject__coerce(arg, 0, &e_arglist[i])) {
+            PyErr_SetString(PyExc_TypeError, "Unable to coerce to Emacs Object");
             return NULL;
         }
-        e_arglist[i] = ((EmacsObject *)arg)->val;
     }
+
+    Py_ssize_t ppos = 0;
+    PyObject *key, *value;
+    while (kwds && PyDict_Next(kwds, &ppos, &key, &value)) {
+        char *kw = PyUnicode_AsUTF8AndSize(key, NULL);
+        if (!kw) return NULL;
+
+        char *buf = (char *)malloc((strlen(kw) + 2) * sizeof(char));
+        sprintf(buf, ":%s", kw);
+        e_arglist[i++] = em_intern(buf);
+        free(buf);
+
+        if (!EmacsObject__coerce(value, 0, &e_arglist[i++])) {
+            PyErr_SetString(PyExc_TypeError, "Unable to coerce to Emacs Object");
+            return NULL;
+        }
+    }
+
     int ilen = Py_SAFE_DOWNCAST(len, Py_ssize_t, int);
 
+    emacs_value func = ((EmacsObject *)self)->val;
     emacs_value ret = em_funcall(func, ilen, e_arglist);
     if (propagate_emacs_error())
         return NULL;

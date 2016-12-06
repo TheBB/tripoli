@@ -3,9 +3,7 @@ import emacs_raw as er
 
 
 def defun(name):
-    name = er.EmacsObject(name, prefer_symbol=True)
-    if not er.symbolp(name):
-        raise TypeError('Function name must be a symbol')
+    name = er.EmacsObject(name, require_symbol=True)
 
     def decorator(fn):
         er.intern('fset')(name, er.function(fn))
@@ -14,13 +12,9 @@ def defun(name):
 
 
 def add_hook(hook, append=False, local=False, name=None):
-    hook = er.EmacsObject(hook, prefer_symbol=True)
-    if not er.symbolp(hook):
-        raise TypeError('Hook name must be a symbol')
+    hook = er.EmacsObject(hook, require_symbol=True)
     if name:
-        name = er.EmacsObject(name, prefer_symbol=True)
-        if not er.symbolp(name):
-            raise TypeError('Name must be a symbol')
+        name = er.EmacsObject(name, require_symbol=True)
 
     def decorator(fn):
         if name:
@@ -28,11 +22,7 @@ def add_hook(hook, append=False, local=False, name=None):
             efn = name
         else:
             efn = er.function(fn)
-        er.intern('add-hook')(
-            hook, efn,
-            er.EmacsObject(append),
-            er.EmacsObject(local)
-        )
+        er.intern('add-hook')(hook, efn, append, local)
         return fn
     return decorator
 
