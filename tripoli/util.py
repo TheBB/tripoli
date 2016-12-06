@@ -6,19 +6,6 @@ from emacs_raw import intern, symbolp
 from emacs import cons, list as mklist, symbol_value, set as setq
 
 
-def emacsify(s, prefer_symbol=False):
-    if isinstance(s, EmacsNamespace):
-        if prefer_symbol:
-            return s.ds_
-        return s.vb_
-    if isinstance(s, tuple) and len(s) == 2:
-        return cons(emacsify(s[0]), emacsify(s[1]))
-    if isinstance(s, tuple) or isinstance(s, list):
-        return mklist(*(emacsify(v) for v in s))
-    return EmacsObject(s, prefer_symbol=prefer_symbol)
-    raise Exception('Unable to emacsify value')
-
-
 def emacsify_args(only=None, avoid=set(), prefer_symbol=set(),
                   prefer_symbol_from_self=set()):
     if prefer_symbol_from_self:
@@ -28,7 +15,7 @@ def emacsify_args(only=None, avoid=set(), prefer_symbol=set(),
             return value
         if only is None or key in only:
             sym = (prefer_symbol is True) or (key in prefer_symbol)
-            return emacsify(value, sym)
+            return EmacsObject(value, prefer_symbol=sym)
         return value
     def decorator(fn):
         def ret(*args, **kwargs):

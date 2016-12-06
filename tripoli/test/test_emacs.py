@@ -9,6 +9,19 @@ def test_constructor():
     assert e.str('nil') == e.EmacsObject('nil')
     assert e.int(2) == e.EmacsObject(2)
     assert e.float(2.2) == e.EmacsObject(2.2, prefer_symbol=True)
+    assert '(a b c)' == str(e.EmacsObject(['a', 'b', 'c'], prefer_symbol=True))
+    assert '("a" "b" "c")' == str(e.EmacsObject(['a', 'b', 'c']))
+    assert '(a . b)' == str(e.EmacsObject(('a', 'b'), prefer_symbol=True))
+
+    class A:
+        def __init__(self, val):
+            self.val = val
+        def __emacs__(self, prefer_symbol):
+            return e.EmacsObject(self.val, prefer_symbol)
+    assert e.eq(e.intern('t'), e.EmacsObject(A('t'), prefer_symbol=True))
+    assert e.int(2) == e.EmacsObject(A(2))
+
+    assert e.functionp(e.EmacsObject(lambda: 1))
 
 
 def test_nil():

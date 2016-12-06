@@ -212,6 +212,11 @@ bool em_functionp(emacs_value val);
 emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args);
 
 /**
+ * \brief Call a named function with arbitrary arguments.
+ */
+emacs_value em_funcall_n(char *func, int nargs, emacs_value *args);
+
+/**
  * \brief Call a named function with no arguments.
  */
 emacs_value em_funcall_0(char *func);

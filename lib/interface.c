@@ -124,6 +124,11 @@ emacs_value em_funcall(emacs_value func, int nargs, emacs_value *args)
     return env->funcall(env, func, nargs, args);
 }
 
+emacs_value em_funcall_n(char *func, int nargs, emacs_value *args)
+{
+    return em_funcall(em_intern(func), nargs, args);
+}
+
 emacs_value em_funcall_0(char *func)
 {
     return em_funcall(em_intern(func), 0, NULL);

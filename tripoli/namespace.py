@@ -139,9 +139,8 @@ class EmacsNamespace:
         return next(self.__symbols())
 
     def __call__(self, *args, **kwargs):
-        from .util import emacsify
-        args = [emacsify(v) for v in args]
-        kwargs = {k: emacsify(v) for k, v in kwargs.items()}
+        args = [emacs_raw.EmacsObject(v) for v in args]
+        kwargs = {k: emacs_raw.EmacsObject(v) for k, v in kwargs.items()}
         if kwargs:
             for k, v in kwargs.items():
                 args.append(emacs_raw.intern(':' + k))

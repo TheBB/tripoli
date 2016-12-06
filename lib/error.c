@@ -68,8 +68,8 @@ bool propagate_emacs_error()
 
     PyObject *type = (exit_signal == emacs_funcall_exit_signal) ? EmacsSignal : EmacsThrow;
     PyObject *args = Py_BuildValue("(NN)",
-                                   emacs_object(&EmacsObjectType, exit_symbol),
-                                   emacs_object(&EmacsObjectType, exit_data));
+                                   EmacsObject__make(&EmacsObjectType, exit_symbol),
+                                   EmacsObject__make(&EmacsObjectType, exit_data));
     PyErr_SetObject(type, args);
     return true;
 }

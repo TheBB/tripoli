@@ -15,7 +15,7 @@ typedef struct {
 /**
  * \brief Create a new EmacsObject.
  */
-PyObject *emacs_object(PyTypeObject *type, emacs_value val);
+PyObject *EmacsObject__make(PyTypeObject *type, emacs_value val);
 
 void EmacsObject_dealloc(EmacsObject *self);
 PyObject *EmacsObject_new(PyTypeObject *type, PyObject *args, PyObject *kwds);

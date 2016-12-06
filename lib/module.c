@@ -50,7 +50,7 @@ emacs_value call_func(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *
     PyObject *function = (PyObject *)data;
     PyObject *arglist = PyTuple_New(nargs);
     for (size_t i = 0; i < nargs; i++) {
-        PyObject *arg = emacs_object(&EmacsObjectType, args[i]);
+        PyObject *arg = EmacsObject__make(&EmacsObjectType, args[i]);
         PyTuple_SetItem(arglist, i, arg);
     }
 
@@ -81,7 +81,7 @@ PyObject *py_intern(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &name))
         return NULL;
     emacs_value sym = em_intern(name);
-    return emacs_object(&EmacsObjectType, sym);
+    return EmacsObject__make(&EmacsObjectType, sym);
 }
 
 PyObject *py_str(PyObject *self, PyObject *args)
@@ -90,7 +90,7 @@ PyObject *py_str(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &str))
         return NULL;
     emacs_value ret = em_str(str);
-    return emacs_object(&EmacsObjectType, ret);
+    return EmacsObject__make(&EmacsObjectType, ret);
 }
 
 PyObject *py_int(PyObject *self, PyObject *args)
@@ -99,7 +99,7 @@ PyObject *py_int(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "L", &val))
         return NULL;
     emacs_value ret = em_int(val);
-    return emacs_object(&EmacsObjectType, ret);
+    return EmacsObject__make(&EmacsObjectType, ret);
 }
 
 PyObject *py_float(PyObject *self, PyObject *args)
@@ -108,7 +108,7 @@ PyObject *py_float(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "d", &val))
         return NULL;
     emacs_value ret = em_float(val);
-    return emacs_object(&EmacsObjectType, ret);
+    return EmacsObject__make(&EmacsObjectType, ret);
 }
 
 PyObject *py_function(PyObject *self, PyObject *args)
@@ -123,7 +123,7 @@ PyObject *py_function(PyObject *self, PyObject *args)
     }
     Py_XINCREF(fcn);
     emacs_value func = em_function(call_func, min_nargs, max_nargs, NULL, fcn);
-    return emacs_object(&EmacsObjectType, func);
+    return EmacsObject__make(&EmacsObjectType, func);
 }
 
 EQUALITY(eq)

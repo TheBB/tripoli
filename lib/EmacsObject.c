@@ -52,7 +52,7 @@
         return ret;                                                     \
     }
 
-PyObject *emacs_object(PyTypeObject *type, emacs_value val)
+PyObject *EmacsObject__make(PyTypeObject *type, emacs_value val)
 {
     EmacsObject *self = (EmacsObject *)type->tp_alloc(type, 0);
     if (self)
@@ -62,44 +62,97 @@ PyObject *emacs_object(PyTypeObject *type, emacs_value val)
 
 void EmacsObject_dealloc(EmacsObject *self) {}
 
+bool EmacsObject__coerce(PyObject *arg, int prefer_symbol, emacs_value *ret)
+{
+    if (PyObject_TypeCheck(arg, &EmacsObjectType))
+        *ret = ((EmacsObject *)arg)->val;
+    else if (PyObject_HasAttrString(arg, "__emacs__")) {
+        PyObject *args = Py_BuildValue("()");
+        PyObject *kwargs = PyDict_New();
+        PyDict_SetItemString(kwargs, "prefer_symbol", prefer_symbol ? Py_True : Py_False);
+
+        PyObject *pyret = PyObject_Call(PyObject_GetAttrString(arg, "__emacs__"), args, kwargs);
+        Py_DECREF(args); Py_DECREF(kwargs);
+
+        if (!pyret) return false;
+        if (!PyObject_TypeCheck(pyret, &EmacsObjectType)) {
+            Py_DECREF(pyret);
+            return false;
+        }
+
+        *ret = ((EmacsObject *)pyret)->val;
+        Py_DECREF(pyret);
+    }
+    else if (arg == Py_None || arg == Py_False)
+        *ret = em_intern("nil");
+    else if (arg == Py_True)
+        *ret = em_intern("t");
+    else if (PyLong_Check(arg)) {
+        int overflow;
+        long long val = PyLong_AsLongLongAndOverflow(arg, &overflow);
+        if (PyErr_Occurred() || overflow) return false;
+        *ret = em_int(val);
+    }
+    else if (PyFloat_Check(arg)) {
+        double val = PyFloat_AsDouble(arg);
+        if (PyErr_Occurred()) return false;
+        *ret = em_float(val);
+    }
+    else if (PyUnicode_Check(arg)) {
+        char *val = PyUnicode_AsUTF8AndSize(arg, NULL);
+        if (!val) return false;
+        if (prefer_symbol)
+            *ret = em_intern(val);
+        else
+            *ret = em_str(val);
+    }
+    else if (PyTuple_Check(arg)) {
+        if (PyTuple_Size(arg) != 2)
+            return false;
+        emacs_value a, b;
+        if (!EmacsObject__coerce(PyTuple_GetItem(arg, 0), prefer_symbol, &a))
+            return false;
+        if (!EmacsObject__coerce(PyTuple_GetItem(arg, 1), prefer_symbol, &b))
+            return false;
+        *ret = em_funcall_2("cons", a, b);
+    }
+    else if (PyList_Check(arg)) {
+        int size = Py_SAFE_DOWNCAST(PyList_Size(arg), Py_ssize_t, int);
+        emacs_value items[size];
+        for (size_t i = 0; i < size; i++) {
+            if (!EmacsObject__coerce(PyList_GetItem(arg, i), prefer_symbol, &items[i]))
+                return false;
+        }
+        *ret = em_funcall_n("list", size, items);
+    }
+    else if (PyCallable_Check(arg)) {
+        Py_XINCREF(arg);
+        *ret = em_function(call_func, 0, PTRDIFF_MAX, NULL, arg);
+    }
+    else
+        return false;
+
+    return true;
+}
+
 PyObject *EmacsObject_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     if (PyTuple_Size(args) == 0)
-        return emacs_object(type, em_intern("nil"));
+        return EmacsObject__make(type, em_intern("nil"));
     PyObject *arg;
     int prefer_symbol = false;
     char *keywords[] = {"obj", "prefer_symbol", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|$p", keywords, &arg, &prefer_symbol))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|p", keywords, &arg, &prefer_symbol))
         return NULL;
-    if (PyObject_TypeCheck(arg, &EmacsObjectType)) {
-        emacs_value val = ((EmacsObject *)arg)->val;
-        return emacs_object(type, val);
-    }
-    if (arg == Py_None || arg == Py_False)
-        return emacs_object(type, em_intern("nil"));
-    if (arg == Py_True)
-        return emacs_object(type, em_intern("t"));
-    if (PyLong_Check(arg)) {
-        int overflow;
-        long long val = PyLong_AsLongLongAndOverflow(arg, &overflow);
-        if (PyErr_Occurred() || overflow) return NULL;
-        return emacs_object(type, em_int(val));
-    }
-    if (PyFloat_Check(arg)) {
-        double val = PyFloat_AsDouble(arg);
-        if (PyErr_Occurred()) return NULL;
-        return emacs_object(type, em_float(val));
-    }
-    if (PyUnicode_Check(arg)) {
-        char *val = PyUnicode_AsUTF8AndSize(arg, NULL);
-        if (!val) return NULL;
-        if (prefer_symbol)
-            return emacs_object(type, em_intern(val));
-        return emacs_object(type, em_str(val));
+
+    emacs_value coerced;
+    if (!EmacsObject__coerce(arg, prefer_symbol, &coerced)) {
+        if (!PyErr_Occurred())
+            PyErr_SetString(PyExc_TypeError, "Unable to coerce to Emacs object");
+        return NULL;
     }
 
-    PyErr_SetString(PyExc_TypeError, "Unable to coerce to Emacs object");
-    return NULL;
+    return EmacsObject__make(type, coerced);
 }
 
 int EmacsObject_bool(PyObject *self)
@@ -178,7 +231,7 @@ PyObject *EmacsObject_call(PyObject *self, PyObject *args, PyObject *kwds)
     if (propagate_emacs_error())
         return NULL;
 
-    return emacs_object(&EmacsObjectType, ret);
+    return EmacsObject__make(&EmacsObjectType, ret);
 }
 
 PyObject *EmacsObject_str(PyObject *self)
