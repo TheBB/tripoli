@@ -9,7 +9,7 @@ from emacs import cons, list as mklist, symbol_value, set as setq
 def emacsify_args(only=None, avoid=set(), prefer_symbol=set(),
                   prefer_symbol_from_self=set()):
     if prefer_symbol_from_self:
-        avoid.add(0)
+        avoid = avoid | {0}
     def local_emacsify(key, value, prefer_symbol):
         if key in avoid:
             return value

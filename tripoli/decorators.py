@@ -35,3 +35,12 @@ def add_hook(hook, append=False, local=False, name=None):
         )
         return fn
     return decorator
+
+
+def eval_after_load(feature):
+    feature = er.EmacsObject(feature)
+
+    def decorator(fn):
+        er.intern('eval-after-load')(feature, er.function(fn))
+        return fn
+    return decorator

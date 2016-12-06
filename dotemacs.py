@@ -1,7 +1,11 @@
 from tripoli import require
-from tripoli.decorators import defun, add_hook
+from tripoli.decorators import add_hook, defun, eval_after_load
 from tripoli.types import AssociationList, List
 from emacs import package, message
+
+@eval_after_load('package')
+def load_check():
+    message('package was loaded!')
 
 require('package')
 
