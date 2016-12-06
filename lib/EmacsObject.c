@@ -126,8 +126,16 @@ bool EmacsObject__coerce(PyObject *arg, int prefer_symbol, emacs_value *ret)
         *ret = em_funcall_n("list", size, items);
     }
     else if (PyCallable_Check(arg)) {
+        PyObject *pydoc = PyObject_GetAttrString(arg, "__doc__");
+        char *doc = NULL;
+        if (pydoc && PyUnicode_Check(pydoc)) {
+            doc = PyUnicode_AsUTF8AndSize(pydoc, NULL);
+            if (!doc)
+                PyErr_Clear();
+        }
+
         Py_XINCREF(arg);
-        *ret = em_function(call_func, 0, PTRDIFF_MAX, NULL, arg);
+        *ret = em_function(call_func, 0, PTRDIFF_MAX, doc, arg);
     }
     else
         return false;

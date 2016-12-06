@@ -61,18 +61,13 @@ emacs_value call_func(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *
         UNSET_ENV_AND_RETURN(NULL);
     }
 
-    // The return value must be an Emacs object, but we allow ourselves the
-    // convenience of mapping None to nil
-    if (py_ret == Py_None || py_ret == Py_False)
-        UNSET_ENV_AND_RETURN(em_intern("nil"));
-    else if (py_ret == Py_True)
-        UNSET_ENV_AND_RETURN(em_intern("t"));
-    else if (!PyObject_TypeCheck(py_ret, &EmacsObjectType)) {
+    emacs_value ret;
+    if (!EmacsObject__coerce(py_ret, 0, &ret)) {
         em_error("Function failed to return a valid Emacs object");
         UNSET_ENV_AND_RETURN(NULL);
     }
 
-    UNSET_ENV_AND_RETURN(((EmacsObject *)py_ret)->val);
+    UNSET_ENV_AND_RETURN(ret);
 }
 
 PyObject *py_intern(PyObject *self, PyObject *args)
@@ -121,8 +116,17 @@ PyObject *py_function(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_TypeError, "Parameter must be callable");
         return NULL;
     }
+
+    PyObject *pydoc = PyObject_GetAttrString(fcn, "__doc__");
+    char *doc = NULL;
+    if (pydoc && PyUnicode_Check(pydoc)) {
+        doc = PyUnicode_AsUTF8AndSize(pydoc, NULL);
+        if (!doc)
+            PyErr_Clear();
+    }
+
     Py_XINCREF(fcn);
-    emacs_value func = em_function(call_func, min_nargs, max_nargs, NULL, fcn);
+    emacs_value func = em_function(call_func, min_nargs, max_nargs, doc, fcn);
     return EmacsObject__make(&EmacsObjectType, func);
 }
 

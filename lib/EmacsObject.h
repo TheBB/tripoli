@@ -17,6 +17,11 @@ typedef struct {
  */
 PyObject *EmacsObject__make(PyTypeObject *type, emacs_value val);
 
+/**
+ * \brief Coerce a Python object to an Emacs object.
+ */
+bool EmacsObject__coerce(PyObject *arg, int prefer_symbol, emacs_value *ret);
+
 void EmacsObject_dealloc(EmacsObject *self);
 PyObject *EmacsObject_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 int EmacsObject_bool(PyObject *self);
