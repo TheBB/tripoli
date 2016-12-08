@@ -14,6 +14,7 @@ def emacs_escape(s):
 
 @click.group(
     invoke_without_command=True,
+    context_settings={'ignore_unknown_options': True}
 )
 @click.option('--dev/--no-dev', default=False)
 @click.argument('extra_args', nargs=-1, type=click.UNPROCESSED)
@@ -47,10 +48,14 @@ def main(ctx, dev, extra_args):
     ctx.obj = {
         'path': path,
         'args': ['emacs', '-L', path, '-l', 'libtripoli'],
-        'extra_args': list(extra_args),
     }
     if ctx.invoked_subcommand is None:
-        ctx.invoke(run)
+        if extra_args and extra_args[0] in main.commands:
+            extra_args, cmd = extra_args[1:], main.commands[extra_args[0]]
+        else:
+            cmd = run
+        ctx.obj['extra_args'] = extra_args
+        ctx.invoke(cmd)
 
 
 @main.command()
@@ -70,16 +75,17 @@ def run(ctx):
     subprocess.run(args, check=True)
 
 
-@main.command(context_settings={'ignore_unknown_options': True})
-@click.argument('extra_args', nargs=-1, type=click.UNPROCESSED)
+@main.command()
 @click.pass_context
-def test(ctx, extra_args):
+def test(ctx):
     test_code = textwrap.dedent("""
     from tripoli.test import run_tests
     run_tests([{}])
     """)
-    test_code = test_code.format(','.join(emacs_escape(repr(c)) for c in extra_args))
-    args = ['-q', '--batch'] + ctx.obj['args']
+    test_code = test_code.format(
+        ','.join(emacs_escape(repr(c)) for c in ctx.obj['extra_args'])
+    )
+    args = [ctx.obj['args'][0]] + ['-q', '--batch'] + ctx.obj['args'][1:]
     args.extend(['--eval', '(tripoli-run-string "{}")'.format(test_code),
                  '--eval', '(kill-emacs)'])
     subprocess.run(args, check=True)
@@ -96,7 +102,7 @@ def repl(ctx):
     c.push('import emacs as e')
     c.interact()
     """)
-    args = ['-q', '--batch'] + ctx.obj['args']
+    args = [ctx.obj['args'][0]] + ['-q', '--batch'] + ctx.obj['args'][1:]
     args.extend(['--eval', '(tripoli-run-string "{}")'.format(repl_code)])
     subprocess.run(args, check=True)
 
