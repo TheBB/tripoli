@@ -10,6 +10,7 @@ endif()
 find_package(PythonLibs 3.4 REQUIRED)
 
 add_library(tripoli SHARED lib/main.c lib/interface.c lib/module.c lib/EmacsObject.c lib/error.c)
+install(TARGETS tripoli LIBRARY DESTINATION lib)
 set_property(TARGET tripoli PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(tripoli PRIVATE
   ${EMACS_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/lib)

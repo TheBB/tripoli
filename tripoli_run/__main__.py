@@ -1,3 +1,4 @@
+import glob
 from os.path import abspath, dirname, join
 import os
 import subprocess
@@ -12,9 +13,34 @@ def emacs_escape(s):
 
 
 @click.group(invoke_without_command=True)
+@click.option('--dev/--no-dev', default=False)
 @click.pass_context
-def main(ctx):
-    path = os.environ.get('TRIPOLI_PATH') or abspath(join(dirname(__file__), '..', 'build'))
+def main(ctx, dev):
+    path = os.environ.get('TRIPOLI_PATH')
+    if dev and not path:
+        root = abspath(join(dirname(__file__), '..'))
+        try:
+            path = dirname(max(
+                glob.iglob(join(root, '**', 'libtripoli.so'), recursive=True),
+                key=os.path.getmtime
+            ))
+        except ValueError:
+            pass
+    elif not dev and not path:
+        candidates = [
+            '/usr/lib/libtripoli.so',
+            '/usr/local/lib/libtripoli.so',
+            '/lib/libtripoli.so',
+        ]
+        for c in candidates:
+            if os.path.exists(c) and os.path.isfile(c):
+                path = dirname(c)
+                break
+
+    if not path:
+        print("Could not find libtripoli.", file=sys.stderr)
+        sys.exit(1)
+
     ctx.obj = {
         'path': path,
         'args': ['emacs', '-q', '-L', path, '-l', 'libtripoli']
