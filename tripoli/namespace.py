@@ -59,12 +59,12 @@ class EmacsNamespace:
             return import_module('emacs_raw')
         elif name == 'clear_cache_':
             return self.__clear_cache
+        elif name == '_':
+            return self.__default_symbol()
         elif name == 'fs_':
             return self.__function_symbol
         elif name == 'vs_':
             return self.__variable_symbol
-        elif name == 'ds_':
-            return self.__default_symbol()
         elif name == 'fb_':
             sym = self.__function_symbol()
             return emacs_raw.intern('symbol-function')(sym)
@@ -149,13 +149,13 @@ class EmacsNamespace:
         return func(*args)
 
     def __setattr__(self, name, value):
-        if name.startswith('_EmacsNamespace__') or name.startswith('__') or name.endswith('_'):
-            self.__dict__[name] = value
-            return
         if isinstance(value, EmacsNamespace):
-            return
-        sym = getattr(self, name).vs_(exists=False)
-        emacs_raw.intern('set')(sym, value)
+            self.__cached_subs[name] = value
+        elif name.startswith('_') or name.endswith('_'):
+            self.__dict__[name] = value
+        else:
+            sym = getattr(self, name).vs_(exists=False)
+            emacs_raw.intern('set')(sym, value)
 
     def __setitem__(self, name, value):
         sym = self[name].vs_(exists=False)
