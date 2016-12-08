@@ -26,14 +26,15 @@ def function(fn, name=None, interactive=None):
             form.insert(index, interactive)
 
     if name:
+        if not isinstance(name, str):
+            name = fn.__name__.replace('_', '-')
         name = er.EmacsObject(name, require_symbol=True)
         er.intern('fset')(name, efn)
         return name
     return efn
 
 
-def defun(name, **kwargs):
-    assert name
+def defun(name=True, **kwargs):
     def decorator(fn):
         function(fn, name=name, **kwargs)
         return fn

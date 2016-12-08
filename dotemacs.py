@@ -19,11 +19,11 @@ archives.update({
 
 package.initialize()
 
-@defun('some-function', interactive='f')
+@defun(interactive='f')
 def test(arg):
     message(arg)
     return 63
 
-@add_hook('emacs-lisp-mode-hook', name='myfun')
+@add_hook('emacs-lisp-mode-hook')
 def lmfao():
     message('lmfao')
