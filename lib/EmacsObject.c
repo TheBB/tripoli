@@ -99,7 +99,7 @@ bool EmacsObject__coerce(PyObject *arg, int prefer_symbol, emacs_value *ret)
         *ret = em_float(val);
     }
     else if (PyUnicode_Check(arg)) {
-        char *val = PyUnicode_AsUTF8AndSize(arg, NULL);
+        char *val = PyUnicode_AsUTF8(arg);
         if (!val) return false;
         if (prefer_symbol)
             *ret = em_intern(val);
@@ -129,7 +129,7 @@ bool EmacsObject__coerce(PyObject *arg, int prefer_symbol, emacs_value *ret)
         PyObject *pydoc = PyObject_GetAttrString(arg, "__doc__");
         char *doc = NULL;
         if (pydoc && PyUnicode_Check(pydoc)) {
-            doc = PyUnicode_AsUTF8AndSize(pydoc, NULL);
+            doc = PyUnicode_AsUTF8(pydoc);
             if (!doc)
                 PyErr_Clear();
         }
@@ -240,7 +240,7 @@ PyObject *EmacsObject_call(PyObject *self, PyObject *args, PyObject *kwds)
     Py_ssize_t ppos = 0;
     PyObject *key, *value;
     while (kwds && PyDict_Next(kwds, &ppos, &key, &value)) {
-        char *kw = PyUnicode_AsUTF8AndSize(key, NULL);
+        char *kw = PyUnicode_AsUTF8(key);
         if (!kw) return NULL;
 
         char *buf = (char *)malloc((strlen(kw) + 2) * sizeof(char));
@@ -348,7 +348,7 @@ PyObject *EmacsObject_cmp(PyObject *pa, PyObject *pb, int op)
         b = em_float(val);
     }
     else if (em_stringp(a) && PyUnicode_Check(pb)) {
-        char *val = PyUnicode_AsUTF8AndSize(pb, NULL);
+        char *val = PyUnicode_AsUTF8(pb);
         if (!val) return NULL;
         b = em_str(val);
     }

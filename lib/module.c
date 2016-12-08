@@ -119,7 +119,7 @@ PyObject *py_function(PyObject *self, PyObject *args, PyObject *kwds)
     PyObject *pydoc = PyObject_GetAttrString(fcn, "__doc__");
     char *doc = NULL;
     if (pydoc && PyUnicode_Check(pydoc)) {
-        doc = PyUnicode_AsUTF8AndSize(pydoc, NULL);
+        doc = PyUnicode_AsUTF8(pydoc);
         if (!doc)
             PyErr_Clear();
     }
