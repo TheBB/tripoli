@@ -13,41 +13,48 @@ bool propagate_python_error()
     PyErr_Fetch(&etype, &eval, &etb);
     if (etype) {
         PyObject *args = PyObject_GetAttrString(eval, "args");
-        PyObject *pys, *pyd;
-        char *msg;
+        emacs_value symbol, data;
 
         // If the exception is of type EmacsSignal or EmacsThrow, and was raised
         // with two arguments, both of which are Emacs objects, we can signal or
         // throw a corresponding non-local exit in Emacs
-        if ((etype == EmacsSignal || etype == EmacsThrow)
+        if ((etype == EmacsSignal || etype == EmacsThrow) && args
             && PyObject_TypeCheck(args, &PyTuple_Type)
             && PyTuple_Size(args) >= 2
-            && (pys = PyTuple_GetItem(args, 0))
-            && PyObject_TypeCheck(pys, &EmacsObjectType)
-            && (pyd = PyTuple_GetItem(args, 1))
-            && PyObject_TypeCheck(pyd, &EmacsObjectType))
+            && EmacsObject__coerce(PyTuple_GetItem(args, 0), 1, &symbol)
+            && EmacsObject__coerce(PyTuple_GetItem(args, 1), 0, &data)
+            && em_symbolp(symbol))
         {
-            emacs_value symbol = ((EmacsObject *)pys)->val;
-            emacs_value data = ((EmacsObject *)pyd)->val;
             if (etype == EmacsSignal)
                 em_signal(symbol, data);
             else if (etype == EmacsThrow)
                 em_throw(symbol, data);
-            Py_DECREF(etype);
-            Py_DECREF(eval);
-            Py_DECREF(etb);
+            Py_XDECREF(etype);
+            Py_XDECREF(eval);
+            Py_XDECREF(etb);
             return true;
         }
 
-        // Otherwise, simply signal an error, with the error message equal to
-        // the exception argument, if any
-        if (!PyArg_ParseTuple(args, "s", &msg))
+        // Otherwise, simply signal an error. If the exception has an .args,
+        // first element of which is a string, use that Otherwise try to repr()
+        // the exception.
+        char *msg = NULL;
+        if (args && PyArg_ParseTuple(args, "s", &msg))
+            ;
+        else {
+            PyObject *repr = PyObject_Repr(eval);
+            if (repr)
+                msg = PyUnicode_AsUTF8(repr);
+            Py_XDECREF(repr);
+        }
+
+        if (!msg)
             msg = "An unknown error occured";
         em_error(msg);
 
-        Py_DECREF(etype);
-        Py_DECREF(eval);
-        Py_DECREF(etb);
+        Py_XDECREF(etype);
+        Py_XDECREF(eval);
+        Py_XDECREF(etb);
         return true;
     }
 
