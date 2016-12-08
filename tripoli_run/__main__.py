@@ -1,5 +1,5 @@
 import glob
-from os.path import abspath, dirname, join
+from os.path import abspath, dirname, exists, expanduser, getmtime, isfile, join
 import os
 import subprocess
 import sys
@@ -14,7 +14,6 @@ def emacs_escape(s):
 
 @click.group(
     invoke_without_command=True,
-    context_settings={'ignore_unknown_options': True}
 )
 @click.option('--dev/--no-dev', default=False)
 @click.argument('extra_args', nargs=-1, type=click.UNPROCESSED)
@@ -26,7 +25,7 @@ def main(ctx, dev, extra_args):
         try:
             path = dirname(max(
                 glob.iglob(join(root, '**', 'libtripoli.so'), recursive=True),
-                key=os.path.getmtime
+                key=getmtime
             ))
         except ValueError:
             pass
@@ -37,7 +36,7 @@ def main(ctx, dev, extra_args):
             '/lib/libtripoli.so',
         ]
         for c in candidates:
-            if os.path.exists(c) and os.path.isfile(c):
+            if exists(c) and isfile(c):
                 path = dirname(c)
                 break
 
@@ -47,7 +46,8 @@ def main(ctx, dev, extra_args):
 
     ctx.obj = {
         'path': path,
-        'args': ['emacs', '-L', path, '-l', 'libtripoli'] + list(extra_args)
+        'args': ['emacs', '-L', path, '-l', 'libtripoli'],
+        'extra_args': list(extra_args),
     }
     if ctx.invoked_subcommand is None:
         ctx.invoke(run)
@@ -56,9 +56,17 @@ def main(ctx, dev, extra_args):
 @main.command()
 @click.pass_context
 def run(ctx):
+    for dotfile in ['~/.emacs.py', '~/.emacs.d/init.py']:
+        dotfile = expanduser(dotfile)
+        if exists(dotfile) and isfile(dotfile):
+            break
+    else:
+        dotfile = None
+
     args = ctx.obj['args']
-    dotfile = join(dirname(__file__), '..', 'dotemacs.py')
-    args.extend(['--eval', '(tripoli-run-file "{}")'.format(dotfile)])
+    if dotfile:
+        args.extend(['--eval', '(tripoli-run-file "{}")'.format(dotfile)])
+    args.extend(ctx.obj['extra_args'])
     subprocess.run(args, check=True)
 
 
