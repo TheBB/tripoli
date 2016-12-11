@@ -245,6 +245,8 @@ PyObject *EmacsObject_call(PyObject *self, PyObject *args, PyObject *kwds)
 
         char *buf = (char *)malloc((strlen(kw) + 2) * sizeof(char));
         sprintf(buf, ":%s", kw);
+        for (char *c = buf; *c != '\0'; c++)
+            if (*c == '_') *c = '-';
         e_arglist[i++] = em_intern(buf);
         free(buf);
 
