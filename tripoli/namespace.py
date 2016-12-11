@@ -144,14 +144,8 @@ class EmacsNamespace:
         return next(self.__symbols())
 
     def __call__(self, *args, **kwargs):
-        args = [emacs_raw.EmacsObject(v) for v in args]
-        kwargs = {k: emacs_raw.EmacsObject(v) for k, v in kwargs.items()}
-        if kwargs:
-            for k, v in kwargs.items():
-                args.append(emacs_raw.intern(':' + k))
-                args.append(v)
         func = self.__function_symbol()
-        return func(*args)
+        return func(*args, **kwargs)
 
     def __setattr__(self, name, value):
         if isinstance(value, EmacsNamespace):

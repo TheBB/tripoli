@@ -1,13 +1,18 @@
 from collections.abc import MutableSequence
 
 from ..util import PlaceOrSymbol, emacsify_args
-from emacs import car, cdr, cons, length, setcar, setcdr
+from emacs import car, cdr, cons, length, setcar, setcdr, symbol_value
 
 
 class List(PlaceOrSymbol, MutableSequence):
 
     def __init__(self, place=None):
         PlaceOrSymbol.__init__(self, place)
+
+    def __emacs__(self, prefer_symbol=False):
+        if self.bindable:
+            return symbol_value(self.place)
+        return self.place
 
     @emacsify_args(avoid={0})
     def push(self, value):
