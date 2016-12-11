@@ -54,6 +54,11 @@ class EmacsNamespace:
     def __clear_cache(self):
         self.__cached_subs = {}
 
+    def __emacs__(self, prefer_symbol=False):
+        if prefer_symbol:
+            return self._
+        return self.vb_
+
     def __getattr_special(self, name):
         if name == 'raw_' and not self.__prefix:
             return import_module('emacs_raw')
