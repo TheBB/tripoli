@@ -10,7 +10,7 @@ setup(
     author_email='evfonn@gmail.com',
     license='GPL3',
     url='https://github.com/TheBB/tripoli',
-    py_modules=['tripoli_test', 'tripoli_run'],
+    py_modules=['tripoli_run', 'tripoli'],
     entry_points={
         'console_scripts': ['tripoli=tripoli_run.__main__:main'],
     },
