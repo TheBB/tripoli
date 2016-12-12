@@ -99,8 +99,6 @@ def test_delitem_len():
     )
     alist = AssociationList(eo, assq=True, prefer_symbol=True)
 
-    with pytest.raises(TypeError):
-        del alist['a']
     assert alist['b'] == 2
     del alist['b']
     assert len(alist) == 2
@@ -153,9 +151,6 @@ def test_clear():
         cons(_('c'), er.int(3)),
     )
     alist = AssociationList(eo)
-
-    with pytest.raises(TypeError):
-        alist.clear()
 
     setq(_('test'), eo)
     alist = AssociationList(_('test'))

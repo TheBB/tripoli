@@ -5,13 +5,6 @@ from importlib.machinery import ModuleSpec
 from itertools import groupby, product
 
 
-class AmbiguousSymbolError(NameError):
-    pass
-
-class UnboundSymbolError(NameError):
-    pass
-
-
 class EmacsNamespaceFinder:
 
     def find_spec(self, name, path, target):
@@ -41,6 +34,15 @@ class EmacsNamespace:
         self.__prefix = [] if prefix is None else prefix
         self.__separators = seps
         self.__clear_cache()
+        self.__name__ = next(self.__symbols(convert=False))
+        self.__qualname__ = self.__name__
+
+    @property
+    def __doc__(self):
+        try:
+            return emacs_raw.intern('documentation')(self.fs_(), True)
+        except emacs_raw.Signal:
+            return None
 
     def __sub(self, **kwargs):
         new_kwargs = {'prefix': self.__prefix, 'seps': self.__separators}
@@ -125,10 +127,10 @@ class EmacsNamespace:
         for s in self.__symbols():
             if predicate(s):
                 if found:
-                    raise AmbiguousSymbolError()
+                    raise NameError()
                 found = s
         if found is None and exists:
-            raise UnboundSymbolError()
+            raise NameError()
         elif found is None:
             sym = next(self.__symbols())
             return sym

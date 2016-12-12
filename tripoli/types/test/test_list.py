@@ -19,17 +19,14 @@ def test_construct():
 
     l = List(eo)
     assert list(l) == py_list('abc')
-    assert not l.bindable
 
     setq(_('test'), eo)
     l = List(_('test'))
     assert list(l) == py_list('abc')
-    assert l.bindable
 
     import emacs
     l = List(emacs.test)
     assert list(l) == py_list('abc')
-    assert l.bindable
 
 
 def test_getitem():
@@ -60,9 +57,6 @@ def test_delitem():
     del l[1]
     assert list(l) == py_list('acde')
 
-    with pytest.raises(TypeError):
-        del l[0]
-
     eo = em_list('abcde')
     setq(_('test'), eo)
     l = List(_('test'))
@@ -74,8 +68,6 @@ def test_delete():
     eo = em_list(ascii_lowercase)
 
     l = List(eo)
-    with pytest.raises(TypeError):
-        l.delete([0])
 
     setq(_('test'), eo)
     l = List(_('test'))
@@ -85,9 +77,6 @@ def test_delete():
 
 def test_empty():
     l = List()
-
-    with pytest.raises(TypeError):
-        l.push(_('a'))
 
     setq(_('test'), er.intern('nil'))
     l = List(_('test'))
@@ -99,9 +88,6 @@ def test_empty():
 
 def test_insert():
     l = List()
-
-    with pytest.raises(TypeError):
-        l.insert(0, _('a'))
 
     setq(_('test'), er.intern('nil'))
     l = List(_('test'))
@@ -117,9 +103,6 @@ def test_insert():
 def test_clear():
     eo = em_list(ascii_lowercase)
     l = List(eo)
-
-    with pytest.raises(TypeError):
-        l.clear()
 
     setq(_('test'), eo)
     l = List(_('test'))

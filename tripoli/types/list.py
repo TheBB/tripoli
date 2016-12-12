@@ -1,32 +1,34 @@
 from collections.abc import MutableSequence
 
-from ..util import PlaceOrSymbol, emacsify_args
+from ..util import PlaceOrSymbol, coerce
 from emacs import car, cdr, cons, length, setcar, setcdr, symbol_value
 
 
 class List(PlaceOrSymbol, MutableSequence):
+    """Wraps an Emacs list in a Pythonic list interface.
+
+    :param place: The list to wrap. Can be a symbol, an Emacs namespace object,
+        a string, an :class:`.EmacsObject` (symbol or otherwise), or `None` (in
+        which case the place is assumed to be `nil`).
+    """
 
     def __init__(self, place=None):
         PlaceOrSymbol.__init__(self, place)
 
-    def __emacs__(self, prefer_symbol=False):
-        if self.bindable:
-            return symbol_value(self.place)
-        return self.place
-
-    @emacsify_args(avoid={0})
+    @coerce(only={'value'})
     def push(self, value):
+        """Push an element to the front of the list. This is considerably
+        faster than :python:`append()`.
+        """
         if self.place:
             head = self.place
             tail = cons(car(head), cdr(head))
             setcar(head, value)
             setcdr(head, tail)
         else:
-            if not self.bindable:
-                raise TypeError("Can't push to an empty non-bound list")
             self.bind(cons(value, self.place))
 
-    @emacsify_args(only={2})
+    @coerce(only={'value'})
     def insert(self, index, value):
         if index == 0:
             self.push(value)
@@ -41,19 +43,19 @@ class List(PlaceOrSymbol, MutableSequence):
             setcdr(prev, cons(value, None))
 
     def clear(self):
-        if not self.bindable:
-            raise TypeError("Can't delete first element of a non-bound list")
         self.bind(None)
 
-    def cell(self, key):
+    def cell(self, index):
+        """Get the cons cell associated with a given index."""
         p = self.place
-        for _ in range(key):
+        for _ in range(index):
             p = cdr(p)
             if not p:
                 raise IndexError('list index out of range')
         return p
 
     def cells(self):
+        """Iterate over all cons cells in the list."""
         p = self.place
         while p:
             yield p
@@ -68,7 +70,7 @@ class List(PlaceOrSymbol, MutableSequence):
     def __getitem__(self, key):
         return car(self.cell(key))
 
-    @emacsify_args(only={2})
+    @coerce(only={'value'})
     def __setitem__(self, key, value):
         setcar(self.cell(key), value)
 
@@ -79,8 +81,6 @@ class List(PlaceOrSymbol, MutableSequence):
         for k in keys:
             k -= track
             if k == 0:
-                if not self.bindable:
-                    raise TypeError("Can't delete first element of a non-bound list")
                 p = cdr(p)
                 track += 1
                 self.bind(p)

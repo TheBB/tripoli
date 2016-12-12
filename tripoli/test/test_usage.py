@@ -2,7 +2,6 @@ import pytest
 
 import emacs_raw as e
 import emacs
-from tripoli import UnboundSymbolError
 
 
 def test_funcall():
@@ -11,7 +10,7 @@ def test_funcall():
     assert e.symbolp(sym)
     assert str(sym) == 'hello'
 
-    with pytest.raises(UnboundSymbolError):
+    with pytest.raises(NameError):
         emacs.no_such_function()
 
 

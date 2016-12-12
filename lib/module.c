@@ -215,11 +215,11 @@ PyObject *PyInit_emacs()
     Py_INCREF(&EmacsObjectType);
     PyModule_AddObject(m, "EmacsObject", (PyObject *)&EmacsObjectType);
 
-    EmacsSignal = PyErr_NewException("emacs_raw.Signal", NULL, NULL);
+    EmacsSignal = PyErr_NewExceptionWithDoc("emacs_raw.Signal", __doc_EmacsSignal, NULL, NULL);
     Py_INCREF(EmacsSignal);
     PyModule_AddObject(m, "Signal", EmacsSignal);
 
-    EmacsThrow = PyErr_NewException("emacs_raw.Throw", NULL, NULL);
+    EmacsThrow = PyErr_NewExceptionWithDoc("emacs_raw.Throw", __doc_EmacsThrow, NULL, NULL);
     Py_INCREF(EmacsThrow);
     PyModule_AddObject(m, "Throw", EmacsThrow);
 

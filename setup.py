@@ -16,5 +16,7 @@ setup(
     },
     install_requires=[
         'click',
+        'pytest',
+        'sphinx',
     ],
 )
