@@ -110,9 +110,8 @@ def test_int():
     assert not e.functionp(zero)
     assert zero
 
-    with pytest.raises(TypeError):
-        e.int(0.1)
-    with pytest.raises(TypeError):
+    assert str(e.int(0.1)) == '0'
+    with pytest.raises(ValueError):
         e.int('alpha')
 
 
@@ -153,7 +152,7 @@ def test_float():
     assert not e.functionp(zero)
     assert zero
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         e.float('alpha')
 
 
@@ -178,10 +177,8 @@ def test_string():
     assert not e.functionp(alpha)
     assert alpha
 
-    with pytest.raises(TypeError):
-        e.str(2)
-    with pytest.raises(TypeError):
-        e.str(1.1)
+    assert str(e.str(2)) == '2'
+    assert str(e.str(1.1)) == '1.1'
 
     s_one = e.str('1')
     i_one = int(s_one)

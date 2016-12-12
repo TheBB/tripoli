@@ -79,17 +79,29 @@ PyObject *py_intern(PyObject *self, PyObject *args)
 
 PyObject *py_str(PyObject *self, PyObject *args)
 {
-    char *str;
-    if (!PyArg_ParseTuple(args, "s", &str))
+    PyObject *arg, *pystr;
+    char *cstr;
+    if (!PyArg_ParseTuple(args, "O", &arg))
         return NULL;
-    emacs_value ret = em_str(str);
+    if (!(pystr = PyObject_Str(arg)))
+        return NULL;
+    if (!(cstr = PyUnicode_AsUTF8(pystr)))
+        return NULL;
+    emacs_value ret = em_str(cstr);
     return EmacsObject__make(&EmacsObjectType, ret);
 }
 
 PyObject *py_int(PyObject *self, PyObject *args)
 {
+    PyObject *arg, *pyint;
+    int overflow;
     long long val;
-    if (!PyArg_ParseTuple(args, "L", &val))
+    if (!PyArg_ParseTuple(args, "O", &arg))
+        return NULL;
+    if (!(pyint = PyNumber_Long(arg)))
+        return NULL;
+    val = PyLong_AsLongLongAndOverflow(arg, &overflow);
+    if (PyErr_Occurred() || overflow)
         return NULL;
     emacs_value ret = em_int(val);
     return EmacsObject__make(&EmacsObjectType, ret);
@@ -97,9 +109,13 @@ PyObject *py_int(PyObject *self, PyObject *args)
 
 PyObject *py_float(PyObject *self, PyObject *args)
 {
+    PyObject *arg, *pyfloat;
     double val;
-    if (!PyArg_ParseTuple(args, "d", &val))
+    if (!PyArg_ParseTuple(args, "O", &arg))
         return NULL;
+    if (!(pyfloat = PyNumber_Float(arg)))
+        return NULL;
+    val = PyFloat_AsDouble(pyfloat);
     emacs_value ret = em_float(val);
     return EmacsObject__make(&EmacsObjectType, ret);
 }
