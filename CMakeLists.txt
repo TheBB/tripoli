@@ -15,3 +15,11 @@ set_property(TARGET tripoli PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(tripoli PRIVATE
   ${EMACS_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/lib)
 target_link_libraries(tripoli ${PYTHON_LIBRARIES})
+
+add_custom_target(repl COMMAND ./repl)
+add_dependencies(repl tripoli)
+configure_file(repl repl)
+
+add_custom_target(check COMMAND ./test)
+add_dependencies(check tripoli)
+configure_file(test test)

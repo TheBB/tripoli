@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+# -*- mode: python -*-
+
+import subprocess
+import sys
+import textwrap
+
+def emacs_escape(s):
+    return s.replace('\\', r'\\').replace('"', r'\"')
+
+if __name__ == '__main__':
+    args = ['emacs', '-q', '--batch', '-L', '.', '-l', 'libtripoli']
+    code = textwrap.dedent("""
+    from tripoli.test import run_tests
+    run_tests([{}])
+    """)
+    code = code.format(','.join(emacs_escape(repr(c)) for c in sys.argv[1:]))
+    args.extend([
+        '--eval', '(tripoli-run-string "{}")'.format(code),
+        '--eval', '(kill-emacs)'
+    ])
+    subprocess.run(args, check=True)

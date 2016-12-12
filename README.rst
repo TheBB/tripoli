@@ -81,7 +81,6 @@ that automatically sets up the load path and requires :code:`libtripoli` for
 you. This assumes that :code:`libtripoli.so` can be found in one of the usual
 locations (:code:`/usr/lib`, :code:`/usr/local/lib` or :code:`/lib`). If that is
 not the case you can set the :code:`TRIPOLI_PATH` environment variable.
-(Alternatively, see the section on development below.)
 
 Additionally, the :code:`tripoli` executable will run one of the files
 :code:`~/.emacs.py` or :code:`~/.emacs.d/init.py` if present. This repository
@@ -112,7 +111,7 @@ Run the tests with pytest using
 
 .. code:: bash
 
-  tripoli test
+  make check
 
 Additional arguments will be passed to pytest.
 
@@ -120,7 +119,7 @@ You can enter a REPL using
 
 .. code:: bash
 
-  tripoli repl
+  make repl
 
 So far I have not been able to embed IPython or anything more sophisticated than
 the default Python REPL (help appreciated). When starting a REPL, the modules
