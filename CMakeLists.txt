@@ -27,3 +27,7 @@ configure_file(test test)
 add_custom_target(doc COMMAND ./doc)
 add_dependencies(doc tripoli)
 configure_file(doc doc)
+
+add_custom_target(gh-pages COMMAND ./gh_pages)
+add_dependencies(gh-pages doc)
+configure_file(gh_pages gh_pages)
