@@ -17,14 +17,8 @@ check-verbose` target.
 You can run Emacs with the built library using the :code:`make run` target or
 the :code:`make run-bare` target (which does not run your init).
 
-You can enter a REPL using
-
-.. code:: bash
-
-   make repl
-
-When starting a REPL, the modules :code:`emacs_raw` and :code:`emacs` are
-automatically imported as :code:`er` and :code:`e`, respectively.
+You can enter a REPL the using :code:`make repl` target. When starting a REPL,
+the module :code:`emacs_raw` is automatically imported as :code:`er`.
 
 .. note::
    So far I have not been able to embed IPython or anything more sophisticated than

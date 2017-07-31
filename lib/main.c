@@ -38,6 +38,7 @@ int emacs_module_init(struct emacs_runtime *ert)
     em_defun(exec_str, "tripoli-exec-str", 1, 1, false, NULL, __doc_exec_str, NULL);
     em_defun(import_module, "tripoli-import", 1, 1, true, em_str("sModule: "), __doc_import_module, NULL);
     em_defun(exec_tests, "tripoli-test", 0, emacs_variadic_function, true, NULL, __doc_exec_tests, NULL);
+    em_defun(exec_repl, "tripoli-repl", 0, 0, true, NULL, __doc_exec_repl, NULL);
 
     em_provide("libtripoli");
 
@@ -187,7 +188,7 @@ emacs_value import_module(emacs_env *env, ptrdiff_t nargs, emacs_value *args, vo
 
 emacs_value exec_tests(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data)
 {
-    UNUSED(nargs); UNUSED(args); UNUSED(data);
+    UNUSED(data);
     push_env(env);
 
     PyObject *module = PyImport_ImportModule("tripoli.test");
@@ -225,4 +226,29 @@ emacs_value exec_tests(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void 
     }
     intmax_t val = PyLong_AsLongLong(ret);
     POP_ENV_AND_RETURN(em_int(val));
+}
+
+
+emacs_value exec_repl(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data)
+{
+    UNUSED(nargs); UNUSED(args); UNUSED(data);
+    push_env(env);
+
+    PyObject *module = PyImport_ImportModule("tripoli.repl");
+    if (!module) {
+        em_error("Failed to import repl module");
+        POP_ENV_AND_RETURN(em__nil);
+    }
+
+    PyObject *func = PyObject_GetAttrString(module, "run_repl");
+    if (!func) {
+        em_error("Failed to import repl module");
+        POP_ENV_AND_RETURN(em__nil);
+    }
+
+    PyObject *arglist = PyTuple_New(nargs);
+    PyObject_CallObject(func, arglist);
+    Py_DECREF(arglist);
+
+    POP_ENV_AND_RETURN(em__nil);
 }

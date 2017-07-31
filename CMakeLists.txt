@@ -53,6 +53,14 @@ add_custom_target(check-verbose COMMAND
   --eval "(kill-emacs (tripoli-test \"-v\"))" VERBATIM)
 add_dependencies(check-verbose tripoli)
 
+add_custom_target(repl COMMAND
+  emacs --batch -q -L .
+  --eval "(setq tripoli-inhibit-init t)"
+  -l libtripoli
+  --eval "(tripoli-repl)"
+  --eval "(kill-emacs)" VERBATIM)
+add_dependencies(repl tripoli)
+
 add_custom_target(docs COMMAND python3 docs.py)
 add_dependencies(docs tripoli)
 configure_file(docs.py docs.py)

@@ -12,6 +12,7 @@ Once this is done, some functions should be available on the Emacs side.
 - :code:`(tripoli-exec-str CODE)` runs Python code in the form of a string.
 - :code:`(tripoli-exec-buffer)` runs the Python code in the current buffer.
 - :code:`(tripoli-exec-file FILE)` runs a given Python file.
+- :code:`(tripoli-repl)` runs a Python REPL in the terminal.
 - :code:`(tripoli-test &rest ARGS)` runs the tests.
 
 When loaded, Tripoli will run one of the files :code:`~/.emacs.py` or

@@ -33,5 +33,10 @@ DOCSTRING(exec_tests,
           "Run the Tripoli test suite with arguments ARGS. Returns error code.")
 emacs_value exec_tests(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data);
 
+DOCSTRING(exec_repl,
+          "(tripoli-repl &rest ARGS)\n\n"
+          "Run a Python REPL in the terminal.")
+emacs_value exec_repl(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void *data);
+
 
 #endif /* MAIN_H */
