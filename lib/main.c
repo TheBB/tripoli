@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
+#include <wordexp.h>
 #include <emacs-module.h>
 #include <Python.h>
 
@@ -40,7 +41,35 @@ int emacs_module_init(struct emacs_runtime *ert)
 
     em_provide("libtripoli");
 
+    maybe_run_init();
+
     return 0;
+}
+
+
+void maybe_run_init()
+{
+    if (em_bound_and_true_p(em_intern("tripoli-inhibit-init")))
+        return;
+
+    FILE *fp = NULL;
+    char *candidates[2] = {"~/.emacs.py", "~/.emacs.d/init.py"};
+    char *filename = NULL;
+
+    size_t i;
+    wordexp_t w;
+    for (i = 0; i < 2 && !fp; i++) {
+        filename = candidates[i];
+        wordexp(candidates[i], &w, 0);
+        for (size_t j = 0; j < w.we_wordc && !fp; j++)
+            fp = fopen(w.we_wordv[j], "r");
+    }
+    if (!fp)
+        return;
+
+    int rv = PyRun_SimpleFileEx(fp, filename, 1);
+    if (rv < 0)
+        em_error("An exception was raised");
 }
 
 

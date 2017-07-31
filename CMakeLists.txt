@@ -34,12 +34,23 @@ target_link_libraries(tripoli ${PYTHON_LIBRARIES})
 add_custom_target(run COMMAND emacs -q -L . -l libtripoli VERBATIM)
 add_dependencies(run tripoli)
 
+add_custom_target(run-bare COMMAND emacs -q -L .
+  --eval "(setq tripoli-inhibit-init t)"
+  -l libtripoli VERBATIM)
+add_dependencies(run tripoli)
+
 add_custom_target(check COMMAND
-  emacs --batch -q -L . -l libtripoli --eval "(kill-emacs (tripoli-test))" VERBATIM)
+  emacs --batch -q -L .
+  --eval "(setq tripoli-inhibit-init t)"
+  -l libtripoli
+  --eval "(kill-emacs (tripoli-test))" VERBATIM)
 add_dependencies(check tripoli)
 
 add_custom_target(check-verbose COMMAND
-  emacs --batch -q -L . -l libtripoli --eval "(kill-emacs (tripoli-test \"-v\"))" VERBATIM)
+  emacs --batch -q -L .
+  --eval "(setq tripoli-inhibit-init t)"
+  -l libtripoli
+  --eval "(kill-emacs (tripoli-test \"-v\"))" VERBATIM)
 add_dependencies(check-verbose tripoli)
 
 add_custom_target(docs COMMAND python3 docs.py)

@@ -6,6 +6,8 @@
 
 int plugin_is_GPL_compatible;
 
+void maybe_run_init();
+
 DOCSTRING(exec_buffer,
           "(tripoli-exec-buffer)\n\n"
           "Executes the Python code in the current buffer.")

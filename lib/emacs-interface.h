@@ -7,7 +7,7 @@
 
 // Internally used and persistent objects
 
-emacs_value em__nil, em__t, em__error, em__eval;
+emacs_value em__nil, em__t, em__error, em__eval, em__boundp, em__symbol_value;
 emacs_value em__cons, em__setcar, em__setcdr, em__vector, em__car, em__cdr;
 emacs_value em__length, em__aref, em__arrayp;
 emacs_value em__format, em__list, em__symbol_name, em__type_of;
@@ -352,6 +352,7 @@ char *em_type_of(emacs_value val);
  */
 bool em_type_is(emacs_value val, const char *type);
 
+bool em_bound_and_true_p(emacs_value val);
 void em_setcar(emacs_value cons, emacs_value car);
 void em_setcdr(emacs_value cons, emacs_value cdr);
 void em_provide(const char *feature_name);

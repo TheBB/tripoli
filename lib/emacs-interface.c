@@ -19,6 +19,8 @@ void populate()
     SIMPLE_POPULATE(nil);
     SIMPLE_POPULATE(t);
     SIMPLE_POPULATE(error);
+    SIMPLE_POPULATE(eval);
+    SIMPLE_POPULATE(boundp);
     SIMPLE_POPULATE(cons);
     SIMPLE_POPULATE(setcar);
     SIMPLE_POPULATE(setcdr);
@@ -39,11 +41,11 @@ void populate()
     SIMPLE_POPULATE(vectorp);
     SIMPLE_POPULATE(listp);
     SIMPLE_POPULATE(functionp);
-    SIMPLE_POPULATE(eval);
     SIMPLE_POPULATE(eq);
     SIMPLE_POPULATE(eql);
     SIMPLE_POPULATE(equal);
 
+    POPULATE(symbol_value, "symbol-value");
     POPULATE(number_or_marker_p, "number-or-marker-p");
     POPULATE(symbol_name, "symbol-name");
     POPULATE(type_of, "type-of");
@@ -347,6 +349,11 @@ bool em_type_is(emacs_value val, const char *type)
     int ret = !strcmp(actual, type);
     free(actual);
     return ret;
+}
+
+bool em_bound_and_true_p(emacs_value val)
+{
+    return em_funcall_1(em__boundp, val) && em_truthy(em_funcall_1(em__symbol_value, val));
 }
 
 void em_setcar(emacs_value cons, emacs_value car)

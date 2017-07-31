@@ -11,20 +11,11 @@ form.
 
 To run Emacs with Tripoli, you can use the :code:`make run` target.
 
-Run the tests with pytest using
+Run the tests with pytest using the :code:`make check` target or the :code:`make
+check-verbose` target.
 
-.. code:: bash
-
-   make check
-
-or
-
-.. code:: bash
-
-   make check-verbose
-
-Or use the :code:`test` script in the build directory to pass additional
-arguments to pytest (such as :code:`-v`).
+You can run Emacs with the built library using the :code:`make run` target or
+the :code:`make run-bare` target (which does not run your init).
 
 You can enter a REPL using
 
