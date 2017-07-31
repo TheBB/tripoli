@@ -254,3 +254,12 @@ class EmacsNamespace:
         else:
             sym = getattr(self, name)[bound(exists=False)]
             _set(sym, value)
+
+    def __repr__(self):
+        return 'EmacsNamespace({})'.format(str(self[sym]))
+
+    def __str__(self):
+        try:
+            return str(self[binding])
+        except Exception as e:
+            return repr(self)
