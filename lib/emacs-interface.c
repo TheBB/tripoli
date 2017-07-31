@@ -27,6 +27,7 @@ void populate()
     SIMPLE_POPULATE(cdr);
     SIMPLE_POPULATE(length);
     SIMPLE_POPULATE(aref);
+    SIMPLE_POPULATE(arrayp);
     SIMPLE_POPULATE(format);
     SIMPLE_POPULATE(list);
     SIMPLE_POPULATE(integerp);
@@ -199,6 +200,7 @@ PREDICATE(consp)
 PREDICATE(vectorp)
 PREDICATE(listp)
 PREDICATE(functionp)
+PREDICATE(arrayp)
 
 #undef PREDICATE
 

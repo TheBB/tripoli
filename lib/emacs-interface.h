@@ -9,7 +9,7 @@
 
 emacs_value em__nil, em__t, em__error, em__eval;
 emacs_value em__cons, em__setcar, em__setcdr, em__vector, em__car, em__cdr;
-emacs_value em__length, em__aref;
+emacs_value em__length, em__aref, em__arrayp;
 emacs_value em__format, em__list, em__symbol_name, em__type_of;
 emacs_value em__integerp, em__floatp, em__numberp, em__stringp, em__symbolp,
     em__consp, em__vectorp, em__listp, em__functionp, em__number_or_marker_p;
@@ -243,6 +243,11 @@ bool em_listp(emacs_value val);
  * \brief Check whether an Emacs object is a function (callable).
  */
 bool em_functionp(emacs_value val);
+
+/**
+ * \brief Check whether an Emacs object is an array.
+ */
+bool em_arrayp(emacs_value val);
 
 /**
  * \brief Check object identity with eq.

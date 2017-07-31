@@ -332,7 +332,7 @@ Py_ssize_t EmacsObject_Size(PyObject *self)
     emacs_value val = ((EmacsObject *)self)->val;
     intmax_t length = 0;
 
-    if (em_stringp(val) || em_vectorp(val)) {
+    if (em_arrayp(val)) {
         emacs_value elength = em_funcall_1(em__length, val);
         length = em_extract_int(elength);
     }
@@ -354,7 +354,7 @@ PyObject *EmacsObject_GetItem(PyObject *self, Py_ssize_t i)
 {
     emacs_value val = ((EmacsObject *)self)->val;
 
-    if (em_stringp(val) || em_vectorp(val)) {
+    if (em_arrayp(val)) {
         if (i >= EmacsObject_Size(self)) {
             PyErr_SetString(PyExc_IndexError, "Index out of bounds");
             return NULL;
@@ -373,7 +373,7 @@ PyObject *EmacsObject_GetItem(PyObject *self, Py_ssize_t i)
         return EmacsObject__make(&EmacsObjectType, obj);
     }
 
-    if (i > 0 && em_consp(val) || i == 0 && !em_truthy(val)) {
+    if ((i > 0 && em_consp(val)) || (i == 0 && !em_truthy(val))) {
         PyErr_SetString(PyExc_IndexError, "Index out of bounds");
         return NULL;
     }
