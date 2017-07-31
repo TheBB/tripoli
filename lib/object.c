@@ -429,9 +429,9 @@ PyObject *EmacsObject_power(PyObject *self, PyObject *other, PyObject *mod)
     {                                                                           \
         PyObject *c_self = self, *c_other = other;                              \
         if (PyObject_TypeCheck(self, &EmacsObjectType))                         \
-            c_self = EmacsObject__normalize(c_self);                                         \
+            c_self = EmacsObject__normalize(c_self);                            \
         if (PyObject_TypeCheck(other, &EmacsObjectType))                        \
-            c_other = EmacsObject__normalize(c_other);                                       \
+            c_other = EmacsObject__normalize(c_other);                          \
                                                                                 \
         PyObject *ret = NULL;                                                   \
                                                                                 \
