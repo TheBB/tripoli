@@ -6,6 +6,13 @@ from functools import partial
 import emacs_raw
 
 
+_symbol_value = emacs_raw.intern('symbol-value')
+_symbol_function = emacs_raw.intern('symbol-function')
+_fboundp = emacs_raw.intern('fboundp')
+_boundp = emacs_raw.intern('boundp')
+_set = emacs_raw.intern('set')
+
+
 class EmacsNamespaceFinder:
 
     def find_spec(self, name, path, target):
@@ -173,11 +180,9 @@ class EmacsNamespace:
         if item.type_ == 'sym':
             return next(self.__symbols())
         if item.type_ == 'fbinding':
-            sym = self.__function_symbol()
-            return emacs_raw.intern('symbol-function')(sym)
+            return _symbol_function(self.__function_symbol())
         if item.type_ == 'binding':
-            sym = self.__variable_symbol()
-            return emacs_raw.intern('symbol-value')(sym)
+            return _symbol_value(self.__variable_symbol())
         if item.type_ == 'fbound':
             return self.__function_symbol(*item.args, **item.kwargs)
         if item.type_ == 'bound':
@@ -238,10 +243,10 @@ class EmacsNamespace:
         return found
 
     def __function_symbol(self, exists=True):
-        return self.__symbol_satisfying(emacs_raw.intern('functionp'), exists=exists)
+        return self.__symbol_satisfying(_fboundp, exists=exists)
 
     def __variable_symbol(self, exists=True):
-        return self.__symbol_satisfying(emacs_raw.intern('boundp'), exists=exists)
+        return self.__symbol_satisfying(_boundp, exists=exists)
 
     def __call__(self, *args, **kwargs):
         func = self.__function_symbol()
@@ -254,4 +259,4 @@ class EmacsNamespace:
             self.__dict__[name] = value
         else:
             sym = getattr(self, name)[bound(exists=False)]
-            emacs_raw.intern('set')(sym, value)
+            _set(sym, value)
