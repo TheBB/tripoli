@@ -63,9 +63,7 @@ priority.
 
 
 def seps(separators):
-    """seps(separators)
-
-Returns a new namespace object representing the same symbol(s), but with a
+    """Returns a new namespace object representing the same symbol(s), but with a
 different separator search space.
 
 :param str separators: A string of separator characters.
@@ -125,9 +123,7 @@ binding.
 
 
 def fbound(exists=True):
-    """fbound(exists=True)
-
-Returns the first symbol with an available function binding.
+    """Returns the first symbol with an available function binding.
 
 :param exists: If *True*, raises a *NameError* if no function binding is found.
     If *False*, instead returns the highest priority symbol in that case.
@@ -140,9 +136,7 @@ Returns the first symbol with an available function binding.
 
 
 def bound(exists=True):
-    """bound(exists=True)
-
-Returns the first symbol with an available variable binding.
+    """Returns the first symbol with an available variable binding.
 
 :param exists: If *True*, raises a *NameError* if no variable binding is found.
     If *False*, instead returns the highest priority symbol in that case.
