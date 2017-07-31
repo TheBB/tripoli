@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>The Design of Tripoli &#8212; Tripoli 0.1 documentation</title>
+    <title>The Design of Tripoli &#8212; Tripoli 0.2 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="dev.html" title="Contributing to Tripoli"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -61,15 +61,13 @@
 <li>When imported, the library launches an embedded Python interpreter and
 imports a module called <code class="code docutils literal"><span class="pre">emacs_raw</span></code>, which provides a relatively
 minimalistic interface to Emacs. It is designed to provide the bare minimum
-of machinery necessary to build upon in Python.</li>
+of machinery necessary to build upon in Python. See <a class="reference internal" href="raw.html"><span class="doc">The emacs_raw module</span></a>.</li>
 <li>When the <code class="code docutils literal"><span class="pre">tripoli</span></code> module is imported, a “fake” module named
 <code class="code docutils literal"><span class="pre">emacs</span></code> is available. This module and its submodules are dynamically
 generated when imported, and provide a reasonably intuitive interface to the
-Emacs namespace, making it appear to be modular when in fact it is not.</li>
-<li>Additional tools are provided by the <code class="code docutils literal"><span class="pre">tripoli</span></code> module for things that
-are still wanted. This includes classes for standard Emacs data structures,
-as well as decorators and context managers for Emacs lisp macros (which are
-otherwise not very useful from Python).</li>
+Emacs namespace, making it appear to be modular when in fact it is not. See
+<a class="reference internal" href="namespace.html"><span class="doc">The emacs module</span></a>.</li>
+<li>The third layer is not yet done.</li>
 </ol>
 <p>The design of each of these layers is expanded on in the following.</p>
 </div>
@@ -122,7 +120,7 @@ otherwise not very useful from Python).</li>
         <li class="right" >
           <a href="dev.html" title="Contributing to Tripoli"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

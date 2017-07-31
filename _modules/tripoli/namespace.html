@@ -1,0 +1,347 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tripoli.namespace &#8212; Tripoli 0.2 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tripoli 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tripoli.namespace</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">importlib.machinery</span> <span class="k">import</span> <span class="n">ModuleSpec</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">groupby</span><span class="p">,</span> <span class="n">product</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+
+<span class="kn">import</span> <span class="nn">emacs_raw</span>
+
+
+<span class="k">class</span> <span class="nc">EmacsNamespaceFinder</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">find_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;emacs&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">EmacsNamespace</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ModuleSpec</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">EmacsNamespaceLoader</span><span class="p">(</span><span class="n">module</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;emacs&#39;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">EmacsNamespaceLoader</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">module</span> <span class="o">=</span> <span class="n">module</span>
+
+    <span class="k">def</span> <span class="nf">create_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">module</span>
+
+    <span class="k">def</span> <span class="nf">exec_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">Indexer</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type_</span> <span class="o">=</span> <span class="n">type_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_</span>
+
+
+<div class="viewcode-block" id="syms"><a class="viewcode-back" href="../../namespace.html#tripoli.namespace.syms">[docs]</a><span class="k">def</span> <span class="nf">syms</span><span class="p">(</span><span class="n">convert</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;syms(convert=True)</span>
+
+<span class="sd">Returns an iterable of the possible symbols that may be pointed to, in order of</span>
+<span class="sd">priority.</span>
+
+<span class="sd">:param convert: If true, returns Emacs symbols. If false, return strings.</span>
+
+<span class="sd">.. code:: python</span>
+
+<span class="sd">   some_namespace[syms()]       # =&gt; iterable of symbols</span>
+<span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Indexer</span><span class="p">(</span><span class="s1">&#39;syms&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{</span><span class="s1">&#39;convert&#39;</span><span class="p">:</span> <span class="n">convert</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="seps"><a class="viewcode-back" href="../../namespace.html#tripoli.namespace.seps">[docs]</a><span class="k">def</span> <span class="nf">seps</span><span class="p">(</span><span class="n">separators</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;seps(separators)</span>
+
+<span class="sd">Returns a new namespace object representing the same symbol(s), but with a</span>
+<span class="sd">different separator search space.</span>
+
+<span class="sd">:param str separators: A string of separator characters.</span>
+
+<span class="sd">.. note::</span>
+<span class="sd">   The new separators are not applied to the existing symbol, only future</span>
+<span class="sd">   children.</span>
+
+<span class="sd">   .. code:: python</span>
+
+<span class="sd">      emacs.a.b[seps(&#39;~&#39;)].c.d  # =&gt; a-b~c~d, not a~b~c~d</span>
+<span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Indexer</span><span class="p">(</span><span class="s1">&#39;seps&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">separators</span><span class="p">,))</span></div>
+
+
+<span class="n">clear_cache</span> <span class="o">=</span> <span class="n">Indexer</span><span class="p">(</span><span class="s1">&#39;clear_cache&#39;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;Child namespaces are cached for performance reasons. Clear the cache by</span>
+<span class="sd">indexing with this object.</span>
+
+<span class="sd">.. code:: python</span>
+
+<span class="sd">   some_namespace[clear_cache]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="n">sym</span> <span class="o">=</span> <span class="n">Indexer</span><span class="p">(</span><span class="s1">&#39;sym&#39;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;Returns the highest priority symbol, whether bound or not.</span>
+
+<span class="sd">.. code:: python</span>
+
+<span class="sd">   some_namespace[sym]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="n">fbinding</span> <span class="o">=</span> <span class="n">Indexer</span><span class="p">(</span><span class="s1">&#39;fbinding&#39;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;Returns the function binding of the first symbol with an available function</span>
+<span class="sd">binding.</span>
+
+<span class="sd">:raises NameError: If no such symbol is found</span>
+
+<span class="sd">.. code:: python</span>
+
+<span class="sd">   some_namespace[fbinding]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="n">binding</span> <span class="o">=</span> <span class="n">Indexer</span><span class="p">(</span><span class="s1">&#39;binding&#39;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;Returns the variabe binding of the first symbol with an available variabe</span>
+<span class="sd">binding.</span>
+
+<span class="sd">:raises NameError: If no such symbol is found</span>
+
+<span class="sd">.. code:: python</span>
+
+<span class="sd">   some_namespace[binding]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="fbound"><a class="viewcode-back" href="../../namespace.html#tripoli.namespace.fbound">[docs]</a><span class="k">def</span> <span class="nf">fbound</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;fbound(exists=True)</span>
+
+<span class="sd">Returns the first symbol with an available function binding.</span>
+
+<span class="sd">:param exists: If *True*, raises a *NameError* if no function binding is found.</span>
+<span class="sd">    If *False*, instead returns the highest priority symbol in that case.</span>
+
+<span class="sd">.. code:: python</span>
+
+<span class="sd">   some_namespace[fbound()]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Indexer</span><span class="p">(</span><span class="s1">&#39;fbound&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{</span><span class="s1">&#39;exists&#39;</span><span class="p">:</span> <span class="n">exists</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="bound"><a class="viewcode-back" href="../../namespace.html#tripoli.namespace.bound">[docs]</a><span class="k">def</span> <span class="nf">bound</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;bound(exists=True)</span>
+
+<span class="sd">Returns the first symbol with an available variable binding.</span>
+
+<span class="sd">:param exists: If *True*, raises a *NameError* if no variable binding is found.</span>
+<span class="sd">    If *False*, instead returns the highest priority symbol in that case.</span>
+
+<span class="sd">.. code:: python</span>
+
+<span class="sd">   some_namespace[bound()]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Indexer</span><span class="p">(</span><span class="s1">&#39;bound&#39;</span><span class="p">,</span> <span class="p">(),</span> <span class="p">{</span><span class="s1">&#39;exists&#39;</span><span class="p">:</span> <span class="n">exists</span><span class="p">})</span></div>
+
+
+<span class="k">class</span> <span class="nc">EmacsNamespace</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seps</span><span class="o">=</span><span class="s1">&#39;-/:|&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__prefix</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__separators</span> <span class="o">=</span> <span class="n">seps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__clear_cache</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__path__</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__clear_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__cached_subs</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">EmacsNamespace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__prefix</span> <span class="o">+</span> <span class="p">[[</span><span class="n">item</span><span class="p">]],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__separators</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Indexer</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;clear_cache&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__clear_cache</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;syms&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__symbols</span><span class="p">(</span><span class="o">*</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">item</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;seps&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">EmacsNamespace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__prefix</span><span class="p">,</span> <span class="o">*</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;sym&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__symbols</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;fbinding&#39;</span><span class="p">:</span>
+            <span class="n">sym</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__function_symbol</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">emacs_raw</span><span class="o">.</span><span class="n">intern</span><span class="p">(</span><span class="s1">&#39;symbol-function&#39;</span><span class="p">)(</span><span class="n">sym</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;binding&#39;</span><span class="p">:</span>
+            <span class="n">sym</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__variable_symbol</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">emacs_raw</span><span class="o">.</span><span class="n">intern</span><span class="p">(</span><span class="s1">&#39;symbol-value&#39;</span><span class="p">)(</span><span class="n">sym</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;fbound&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__function_symbol</span><span class="p">(</span><span class="o">*</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">item</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;bound&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__variable_symbol</span><span class="p">(</span><span class="o">*</span><span class="n">item</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">item</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__emacs__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefer_symbol</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">prefer_symbol</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">sym</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">binding</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__cached_subs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__cached_subs</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="n">attr</span>
+        <span class="n">seps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__separators</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__prefix</span><span class="p">:</span>
+            <span class="n">finals</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__prefix</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]}</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">isalnum</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">finals</span><span class="p">):</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">name</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">finals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">c</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">finals</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">isalnum</span><span class="p">():</span>
+                    <span class="n">seps</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">new_prefix</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">is_sep</span><span class="p">,</span> <span class="n">chars</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">is_sep</span><span class="p">:</span>
+                <span class="n">ilen</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">chars</span><span class="p">)</span>
+                <span class="n">new_prefix</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">c</span><span class="o">*</span><span class="n">ilen</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">seps</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_prefix</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chars</span><span class="p">)])</span>
+            <span class="n">seps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__separators</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">EmacsNamespace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__prefix</span> <span class="o">+</span> <span class="n">new_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__separators</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__cached_subs</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span>
+        <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="k">def</span> <span class="nf">__symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">convert</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">iters</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">__prefix</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">convert</span><span class="p">:</span> <span class="k">yield</span> <span class="n">emacs_raw</span><span class="o">.</span><span class="n">intern</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span> <span class="k">yield</span> <span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">__symbol_satisfying</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">exists</span><span class="p">):</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__symbols</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">predicate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NameError</span><span class="p">()</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="n">s</span>
+        <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">exists</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NameError</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">found</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sym</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__symbols</span><span class="p">())</span>
+            <span class="k">return</span> <span class="n">sym</span>
+        <span class="k">return</span> <span class="n">found</span>
+
+    <span class="k">def</span> <span class="nf">__function_symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__symbol_satisfying</span><span class="p">(</span><span class="n">emacs_raw</span><span class="o">.</span><span class="n">intern</span><span class="p">(</span><span class="s1">&#39;functionp&#39;</span><span class="p">),</span> <span class="n">exists</span><span class="o">=</span><span class="n">exists</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__variable_symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__symbol_satisfying</span><span class="p">(</span><span class="n">emacs_raw</span><span class="o">.</span><span class="n">intern</span><span class="p">(</span><span class="s1">&#39;boundp&#39;</span><span class="p">),</span> <span class="n">exists</span><span class="o">=</span><span class="n">exists</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__function_symbol</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">EmacsNamespace</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_EmacsNamespace__&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;__path__&#39;</span> <span class="ow">or</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;__spec__&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sym</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)[</span><span class="n">bound</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">False</span><span class="p">)]</span>
+            <span class="n">emacs_raw</span><span class="o">.</span><span class="n">intern</span><span class="p">(</span><span class="s1">&#39;set&#39;</span><span class="p">)(</span><span class="n">sym</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tripoli 0.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Eivind Fonn.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+    </div>
+  </body>
+</html>

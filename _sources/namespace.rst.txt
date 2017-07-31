@@ -11,7 +11,8 @@ Attribute access
 ----------------
 
 Accessing attributes on the :code:`emacs` module yields objects that represent
-symbols that may or may not have function or value bindings in Emacs.
+delayed computation of symbols that may or may not have function or value
+bindings in Emacs.
 
 This is best explained through example:
 
@@ -52,7 +53,8 @@ and :code:`a|b-c` before it tries :code:`a-b/c`.
 Symbol search is lazy. You do not have to worry about performance until a symbol
 is actually required.
 
-Adjacent separators must always be equal.
+Adjacent separators must always be equal. That is, :code:`emacs.private._member`
+will not find a symbol named :code:`private-/member`.
 
 
 Item access
@@ -76,6 +78,21 @@ Emacs namespace objects are automatically coerced to Emacs objects when needed,
 preferring the value binding of the symbol, or the symbol itself if
 *prefer_symbol* is true. See :class:`.EmacsObject` for more information.
 
+.. note::
+   Due to limitations with “Python magic” this coercion does not work when
+   assigning to another namespace object. That is, the following does not work
+   as expected.
+
+   .. code:: python
+
+      some_namespace.member = some_other_namespace
+
+   Instead you can use (see below)
+
+   .. code:: python
+
+      some_namespace.member = some_other_namespace[binding]
+
 
 Import mechanism
 ----------------
@@ -90,75 +107,13 @@ children, so it can be used as a regular module.
    from emacs import package
 
 
-Special methods
----------------
+Special indexing
+----------------
 
-All special attributes and methods end with an underscore. If you need to access
-a symbol ending in a separator, please use the item access syntax. All of these
-work on the root object as well as child objects, unless specified otherwise.
+The :code:`tripoli.namespace` module exports a number of special objects that
+can be used to manipulate the behaviour of the dynamic modules more precisely.
+This is done via indexing. See the examples below.
 
-.. attribute:: emacs.raw_
-
-   This special attribute only works on the root :code:`emacs` object, and it
-   allows access to the :mod:`emacs_raw` module.
-
-.. function:: emacs.clear_cache_()
-
-   Child symbols are cached for performance reasons. Clear the cache by calling
-   this method.
-
-.. function:: emacs.symbols_(convert=True)
-
-   Iterates over all symbols described by this object. Makes no guarantee that
-   the symbols are bound.
-
-   :param convert: If *true*, return Emacs objects. If not, return strings.
-
-.. attribute:: emacs._
-
-   Returns the default symbol, i.e. the first yielded from :func:`symbols_()`.
-
-.. function:: emacs.fs_(exists=True)
-
-   Returns the first symbol in :func:`symbols_()` with a function binding (a
-   symbol that satisfies :code:`fboundp`).
-
-   :param exists: If *true*, signal an error if no symbol is found. If *false*,
-                  return the default symbol.
-
-.. function:: emacs.vs_(exists=True)
-
-   Returns the first symbol in :func:`symbols_()` with a value binding (a symbol
-   that satisfies :code:`boundp`).
-
-   :param exists: If *true*, signal an error if no symbol is found. If *false*,
-                  return the default symbol.
-
-.. attribute:: emacs.fb_
-
-   Returns the function binding of the first symbol in :func:`symbols_()` with a
-   function binding.
-
-   :raises NameError: if no such symbol is found
-
-.. attribute:: emacs.vb_
-
-   Returns the value binding of the first symbol in :func:`symbols_()` with a
-   value binding.
-
-   :raises NameError: if no such symbol is found
-
-.. function:: emacs.seps_(s)
-
-   Return a new namespace object representing the same symbol(s), but with a
-   different separator search space.
-
-   :param str s: A string of separator characters.
-
-   .. note::
-      The new separators are not applied to the existing symbol, only future
-      children.
-
-      .. code:: python
-
-         emacs.a.b.seps_('~').c.d  # => a-b~c~d, not a~b~c~d
+.. automodule:: tripoli.namespace
+   :noindex:
+   :members: syms, seps, clear_cache, sym, fbinding, binding, fbound, bound
