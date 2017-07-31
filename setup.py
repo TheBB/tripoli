@@ -11,12 +11,10 @@ setup(
     license='GPL3',
     url='https://github.com/TheBB/tripoli',
     packages=['tripoli'],
-    # entry_points={
-    #     'console_scripts': ['tripoli=tripoli_run.__main__:main'],
-    # },
     install_requires=[
         'click',
         'pytest',
         'sphinx',
+        'ipython',
     ],
 )
