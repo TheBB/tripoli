@@ -1,0 +1,322 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The emacs module &#8212; Tripoli 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The tripoli module" href="tripoli.html" />
+    <link rel="prev" title="The emacs_raw module" href="raw.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tripoli.html" title="The tripoli module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="raw.html" title="The emacs_raw module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-emacs-module">
+<h1>The <code class="code docutils literal"><span class="pre">emacs</span></code> module<a class="headerlink" href="#the-emacs-module" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="code docutils literal"><span class="pre">emacs</span></code> module is not a “real” module, but an object that gives
+dynamic access to the global Emacs namespace in a way that mimics genuine Python
+modules.</p>
+<div class="section" id="attribute-access">
+<h2>Attribute access<a class="headerlink" href="#attribute-access" title="Permalink to this headline">¶</a></h2>
+<p>Accessing attributes on the <code class="code docutils literal"><span class="pre">emacs</span></code> module yields objects that represent
+symbols that may or may not have function or value bindings in Emacs.</p>
+<p>This is best explained through example:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">emacs</span><span class="o">.</span><span class="n">thing</span>             <span class="c1"># =&gt; thing</span>
+<span class="n">emacs</span><span class="o">.</span><span class="n">some_other_thing</span>  <span class="c1"># =&gt; some-other-thing</span>
+<span class="n">emacs</span><span class="o">.</span><span class="n">some</span><span class="o">.</span><span class="n">other</span><span class="o">.</span><span class="n">thing</span>  <span class="c1"># =&gt; some-other-thing</span>
+<span class="n">emacs</span><span class="o">.</span><span class="n">private</span><span class="o">.</span><span class="n">_member</span>   <span class="c1"># =&gt; private--member</span>
+</pre></div>
+</div>
+<p>As you can see, attribute access with <code class="code docutils literal"><span class="pre">.</span></code> and underscores behave
+identically by inserting hyphens. This has the fortunate coincidence that a
+leading underscore represents private members as expected.</p>
+<p>These modules also support attribute assignment and method calling.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span>from emacs import package
+package.archives = …
+package.initialize()
+
+# The above is equivalent to the following in Emacs lisp:
+# (setq package-archives …)
+# (package-initialize)
+</pre></div>
+</div>
+</div>
+<div class="section" id="non-standard-separators">
+<h2>Non-standard separators<a class="headerlink" href="#non-standard-separators" title="Permalink to this headline">¶</a></h2>
+<p>Although most Emacs authors use only hyphens as a separator in symbols, many do
+not. Tripoli can find any symbol using separators from the set <code class="code docutils literal"><span class="pre">-/:|</span></code>,
+prioritized in that order (i.e. hyphens over forward slashes, and so on).
+The search starts at the first separator in the symbol, so that e.g.
+<code class="code docutils literal"><span class="pre">emacs.a.b.c</span></code> searches through <code class="code docutils literal"><span class="pre">a-b-c</span></code>, <code class="code docutils literal"><span class="pre">a/b-c</span></code>, <code class="code docutils literal"><span class="pre">a:b-c</span></code>
+and <code class="code docutils literal"><span class="pre">a|b-c</span></code> before it tries <code class="code docutils literal"><span class="pre">a-b/c</span></code>.</p>
+<p>Symbol search is lazy. You do not have to worry about performance until a symbol
+is actually required.</p>
+<p>Adjacent separators must always be equal.</p>
+</div>
+<div class="section" id="item-access">
+<h2>Item access<a class="headerlink" href="#item-access" title="Permalink to this headline">¶</a></h2>
+<p>If you feel that performance is problematic or you can’t find the symbols you
+need, you can access a specific symbol by indexing:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">emacs</span><span class="p">[</span><span class="s1">&#39;some**weird++symbol&#39;</span><span class="p">]</span>  <span class="c1"># =&gt; some**weird++symbol</span>
+<span class="n">emacs</span><span class="o">.</span><span class="n">prefix</span><span class="p">[</span><span class="s1">&#39;~~~&#39;</span><span class="p">]</span>           <span class="c1"># =&gt; prefix~~~</span>
+</pre></div>
+</div>
+<p>Note, no implicit separators are used in this case.</p>
+</div>
+<div class="section" id="emacsobject-coercion">
+<h2><a class="reference internal" href="raw.html#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> coercion<a class="headerlink" href="#emacsobject-coercion" title="Permalink to this headline">¶</a></h2>
+<p>Emacs namespace objects are automatically coerced to Emacs objects when needed,
+preferring the value binding of the symbol, or the symbol itself if
+<em>prefer_symbol</em> is true. See <a class="reference internal" href="raw.html#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> for more information.</p>
+</div>
+<div class="section" id="import-mechanism">
+<h2>Import mechanism<a class="headerlink" href="#import-mechanism" title="Permalink to this headline">¶</a></h2>
+<p>When the <a class="reference internal" href="tripoli.html#module-tripoli" title="tripoli"><code class="xref py py-mod docutils literal"><span class="pre">tripoli</span></code></a> module is imported, an import hook is inserted into
+Python’s import mechanism to handle importing the <code class="code docutils literal"><span class="pre">emacs</span></code> module and its
+children, so it can be used as a regular module.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">emacs.package</span> <span class="k">as</span> <span class="nn">package</span>
+<span class="kn">from</span> <span class="nn">emacs</span> <span class="k">import</span> <span class="n">package</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="special-methods">
+<h2>Special methods<a class="headerlink" href="#special-methods" title="Permalink to this headline">¶</a></h2>
+<p>All special attributes and methods end with an underscore. If you need to access
+a symbol ending in a separator, please use the item access syntax. All of these
+work on the root object as well as child objects, unless specified otherwise.</p>
+<dl class="attribute">
+<dt id="emacs.raw_">
+<code class="descclassname">emacs.</code><code class="descname">raw_</code><a class="headerlink" href="#emacs.raw_" title="Permalink to this definition">¶</a></dt>
+<dd><p>This special attribute only works on the root <code class="code docutils literal"><span class="pre">emacs</span></code> object, and it
+allows access to the <a class="reference internal" href="raw.html#module-emacs_raw" title="emacs_raw"><code class="xref py py-mod docutils literal"><span class="pre">emacs_raw</span></code></a> module.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="emacs.clear_cache_">
+<code class="descclassname">emacs.</code><code class="descname">clear_cache_</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#emacs.clear_cache_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Child symbols are cached for performance reasons. Clear the cache by calling
+this method.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="emacs.symbols_">
+<code class="descclassname">emacs.</code><code class="descname">symbols_</code><span class="sig-paren">(</span><em>convert=True</em><span class="sig-paren">)</span><a class="headerlink" href="#emacs.symbols_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over all symbols described by this object. Makes no guarantee that
+the symbols are bound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>convert</strong> &#8211; If <em>true</em>, return Emacs objects. If not, return strings.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="emacs._">
+<code class="descclassname">emacs.</code><code class="descname">_</code><a class="headerlink" href="#emacs._" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the default symbol, i.e. the first yielded from <a class="reference internal" href="#emacs.symbols_" title="emacs.symbols_"><code class="xref py py-func docutils literal"><span class="pre">symbols_()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="emacs.fs_">
+<code class="descclassname">emacs.</code><code class="descname">fs_</code><span class="sig-paren">(</span><em>exists=True</em><span class="sig-paren">)</span><a class="headerlink" href="#emacs.fs_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the first symbol in <a class="reference internal" href="#emacs.symbols_" title="emacs.symbols_"><code class="xref py py-func docutils literal"><span class="pre">symbols_()</span></code></a> with a function binding (a
+symbol that satisfies <code class="code docutils literal"><span class="pre">fboundp</span></code>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>exists</strong> &#8211; If <em>true</em>, signal an error if no symbol is found. If <em>false</em>,
+return the default symbol.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="emacs.vs_">
+<code class="descclassname">emacs.</code><code class="descname">vs_</code><span class="sig-paren">(</span><em>exists=True</em><span class="sig-paren">)</span><a class="headerlink" href="#emacs.vs_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the first symbol in <a class="reference internal" href="#emacs.symbols_" title="emacs.symbols_"><code class="xref py py-func docutils literal"><span class="pre">symbols_()</span></code></a> with a value binding (a symbol
+that satisfies <code class="code docutils literal"><span class="pre">boundp</span></code>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>exists</strong> &#8211; If <em>true</em>, signal an error if no symbol is found. If <em>false</em>,
+return the default symbol.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="emacs.fb_">
+<code class="descclassname">emacs.</code><code class="descname">fb_</code><a class="headerlink" href="#emacs.fb_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the function binding of the first symbol in <a class="reference internal" href="#emacs.symbols_" title="emacs.symbols_"><code class="xref py py-func docutils literal"><span class="pre">symbols_()</span></code></a> with a
+function binding.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>NameError</strong> &#8211; if no such symbol is found</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="emacs.vb_">
+<code class="descclassname">emacs.</code><code class="descname">vb_</code><a class="headerlink" href="#emacs.vb_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the value binding of the first symbol in <a class="reference internal" href="#emacs.symbols_" title="emacs.symbols_"><code class="xref py py-func docutils literal"><span class="pre">symbols_()</span></code></a> with a
+value binding.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>NameError</strong> &#8211; if no such symbol is found</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="emacs.seps_">
+<code class="descclassname">emacs.</code><code class="descname">seps_</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#emacs.seps_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new namespace object representing the same symbol(s), but with a
+different separator search space.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>s</strong> (<em>str</em>) &#8211; A string of separator characters.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The new separators are not applied to the existing symbol, only future
+children.</p>
+<div class="code python last highlight-default"><div class="highlight"><pre><span></span><span class="n">emacs</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">seps_</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">d</span>  <span class="c1"># =&gt; a-b~c~d, not a~b~c~d</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The <code class="code docutils literal"><span class="pre">emacs</span></code> module</a><ul>
+<li><a class="reference internal" href="#attribute-access">Attribute access</a></li>
+<li><a class="reference internal" href="#non-standard-separators">Non-standard separators</a></li>
+<li><a class="reference internal" href="#item-access">Item access</a></li>
+<li><a class="reference internal" href="#emacsobject-coercion"><code class="docutils literal"><span class="pre">EmacsObject</span></code> coercion</a></li>
+<li><a class="reference internal" href="#import-mechanism">Import mechanism</a></li>
+<li><a class="reference internal" href="#special-methods">Special methods</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="raw.html"
+                        title="previous chapter">The <code class="code docutils literal"><span class="pre">emacs_raw</span></code> module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tripoli.html"
+                        title="next chapter">The <code class="code docutils literal"><span class="pre">tripoli</span></code> module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/namespace.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tripoli.html" title="The tripoli module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="raw.html" title="The emacs_raw module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Eivind Fonn.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+    </div>
+  </body>
+</html>

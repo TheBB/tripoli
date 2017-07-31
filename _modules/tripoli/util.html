@@ -1,0 +1,199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tripoli.util &#8212; Tripoli 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="top" title="Tripoli 0.1 documentation" href="../../index.html" />
+    <link rel="up" title="tripoli" href="../tripoli.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tripoli 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../tripoli.html" accesskey="U">tripoli</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tripoli.util</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
+
+<span class="kn">from</span> <span class="nn">emacs_raw</span> <span class="k">import</span> <span class="n">EmacsObject</span>
+<span class="kn">import</span> <span class="nn">emacs_raw</span> <span class="k">as</span> <span class="nn">er</span>
+
+<span class="kn">from</span> <span class="nn">.namespace</span> <span class="k">import</span> <span class="n">EmacsNamespace</span>
+<span class="kn">from</span> <span class="nn">emacs_raw</span> <span class="k">import</span> <span class="n">intern</span><span class="p">,</span> <span class="n">symbolp</span>
+<span class="kn">from</span> <span class="nn">emacs</span> <span class="k">import</span> <span class="n">cons</span><span class="p">,</span> <span class="nb">list</span> <span class="k">as</span> <span class="n">mklist</span><span class="p">,</span> <span class="n">symbol_value</span><span class="p">,</span> <span class="nb">set</span> <span class="k">as</span> <span class="n">setq</span>
+
+
+<div class="viewcode-block" id="coerce"><a class="viewcode-back" href="../../tripoli.html#tripoli.util.coerce">[docs]</a><span class="k">def</span> <span class="nf">coerce</span><span class="p">(</span><span class="n">only</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">avoid</span><span class="o">=</span><span class="nb">set</span><span class="p">(),</span> <span class="n">prefer_symbol</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prefer_symbol_from_self</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decorator for coercing arguments to Emacs objects.</span>
+
+<span class="sd">    :param only: Only the arguments in this set will be coerced. If set to</span>
+<span class="sd">        `None`, all arguments are coerced.</span>
+<span class="sd">    :type only: set or None</span>
+<span class="sd">    :param set avoid: Arguments in this set will not be coerced, whatever the</span>
+<span class="sd">        value of `only`.</span>
+<span class="sd">    :param prefer_symbol: Arguments for which symbols should be preferred over</span>
+<span class="sd">        strings. If true, applies to all arguments.</span>
+<span class="sd">    :type prefer_symbol: set or bool</span>
+<span class="sd">    :param prefer_symbol_from_self: If given, should be a set of arguments for</span>
+<span class="sd">        which symbols are preferred over strings `if any only if` the value of</span>
+<span class="sd">        :python:`self.prefer_symbol` is true. This will automatically add</span>
+<span class="sd">        `self` to the list of avoided arguments. The argument `self` *must* be</span>
+<span class="sd">        present and it *must* have this attribute.</span>
+<span class="sd">    :type prefer_symbol_from_self: set or bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">prefer_symbol_from_self</span><span class="p">:</span>
+        <span class="n">avoid</span> <span class="o">=</span> <span class="n">avoid</span> <span class="o">|</span> <span class="p">{</span><span class="s1">&#39;self&#39;</span><span class="p">}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prefer_symbol_from_self</span><span class="p">,</span> <span class="nb">set</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">prefer_symbol</span><span class="p">:</span>
+            <span class="n">prefer_symbol</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">binding</span> <span class="o">=</span> <span class="n">signature</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">psym</span> <span class="o">=</span> <span class="n">prefer_symbol</span>
+            <span class="k">if</span> <span class="n">prefer_symbol_from_self</span> <span class="ow">and</span> <span class="n">binding</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="s1">&#39;self&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">prefer_symbol</span><span class="p">:</span>
+                <span class="n">psym</span> <span class="o">=</span> <span class="n">psym</span> <span class="o">|</span> <span class="n">prefer_symbol_from_self</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">binding</span><span class="o">.</span><span class="n">arguments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">avoid</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">only</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">only</span><span class="p">:</span>
+                    <span class="n">sym</span> <span class="o">=</span> <span class="n">psym</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">psym</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="k">else</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">psym</span>
+                    <span class="n">binding</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">EmacsObject</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">prefer_symbol</span><span class="o">=</span><span class="n">sym</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="o">*</span><span class="n">binding</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">binding</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wrap</span>
+    <span class="k">return</span> <span class="n">decorator</span></div>
+
+
+<div class="viewcode-block" id="symbolify"><a class="viewcode-back" href="../../tripoli.html#tripoli.util.symbolify">[docs]</a><span class="k">def</span> <span class="nf">symbolify</span><span class="p">(</span><span class="n">only</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">avoid</span><span class="o">=</span><span class="nb">set</span><span class="p">()):</span>
+    <span class="sd">&quot;&quot;&quot;Decorator for coercing arguments to Emacs symbols.</span>
+
+<span class="sd">    Equivalent to :func:`.coerce` with `prefer_symbol` set to true.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">coerce</span><span class="p">(</span><span class="n">only</span><span class="o">=</span><span class="n">only</span><span class="p">,</span> <span class="n">avoid</span><span class="o">=</span><span class="n">avoid</span><span class="p">,</span> <span class="n">prefer_symbol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PlaceOrSymbol"><a class="viewcode-back" href="../../tripoli.html#tripoli.util.PlaceOrSymbol">[docs]</a><span class="k">class</span> <span class="nc">PlaceOrSymbol</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A generic class for wrapping an Emacs value that can either be tied to a</span>
+<span class="sd">    `symbol` (representing its value binding) or a `place` (any mutable object).</span>
+
+<span class="sd">    For example, an Emacs list is technically only a cons cell, but certain</span>
+<span class="sd">    mutable operations (deletion, for example) may not work as expected unless</span>
+<span class="sd">    the value binding of a symbol can be changed to point to a new place.</span>
+
+<span class="sd">    :param place: The place to track. Can be a symbol, an Emacs namespace</span>
+<span class="sd">        object, a string, an :class:`.EmacsObject` (symbol or otherwise), or</span>
+<span class="sd">        `None` (in which case the place is assumed to be `nil`).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">place</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">place</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_place</span> <span class="o">=</span> <span class="n">intern</span><span class="p">(</span><span class="s1">&#39;nil&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">place</span><span class="p">,</span> <span class="n">EmacsNamespace</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span> <span class="o">=</span> <span class="n">place</span><span class="o">.</span><span class="n">vs_</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">place</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span> <span class="o">=</span> <span class="n">er</span><span class="o">.</span><span class="n">intern</span><span class="p">(</span><span class="n">place</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">place</span><span class="p">,</span> <span class="n">EmacsObject</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Invalid place&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">symbolp</span><span class="p">(</span><span class="n">place</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_place</span> <span class="o">=</span> <span class="n">place</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span> <span class="o">=</span> <span class="n">place</span>
+
+    <span class="k">def</span> <span class="nf">__emacs__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefer_symbol</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">place</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">place</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The `place` for this object. If tracking a symbol, equivalent to that</span>
+<span class="sd">        symbol&#39;s value binding.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_place&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_place</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">symbol_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PlaceOrSymbol.bind"><a class="viewcode-back" href="../../tripoli.html#tripoli.util.PlaceOrSymbol.bind">[docs]</a>    <span class="k">def</span> <span class="nf">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Bind to a new place. If tracking a symbol, updates that symbol&#39;s value</span>
+<span class="sd">        binding.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_symbol&#39;</span><span class="p">):</span>
+            <span class="n">setq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_place</span> <span class="o">=</span> <span class="n">value</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Tripoli 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../tripoli.html" >tripoli</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Eivind Fonn.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.9.
+    </div>
+  </body>
+</html>

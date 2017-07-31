@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tripoli.types.alist &#8212; Tripoli 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="top" title="Tripoli 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="tripoli" href="../../tripoli.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tripoli 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../tripoli.html" accesskey="U">tripoli</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tripoli.types.alist</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="k">import</span> <span class="n">MutableMapping</span>
+
+<span class="kn">from</span> <span class="nn">..util</span> <span class="k">import</span> <span class="n">coerce</span>
+<span class="kn">from</span> <span class="nn">.list</span> <span class="k">import</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">emacs</span> <span class="k">as</span> <span class="nn">e</span>
+<span class="kn">from</span> <span class="nn">emacs</span> <span class="k">import</span> <span class="n">car</span><span class="p">,</span> <span class="n">caar</span><span class="p">,</span> <span class="n">cdr</span><span class="p">,</span> <span class="n">cons</span><span class="p">,</span> <span class="n">equal</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">setcdr</span>
+
+
+<div class="viewcode-block" id="AssociationList"><a class="viewcode-back" href="../../../tripoli.html#tripoli.types.AssociationList">[docs]</a><span class="k">class</span> <span class="nc">AssociationList</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">,</span> <span class="n">List</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wraps an Emacs alist in a Pythonic mapping interface.</span>
+
+<span class="sd">    :param place: The alist to wrap. Can be a symbol, an Emacs namespace</span>
+<span class="sd">        object, a string, an :class:`.EmacsObject` (symbol or otherwise), or</span>
+<span class="sd">        `None` (in which case the place is assumed to be `nil`).</span>
+<span class="sd">    :param bool inplace: Set to true to force updating existing cons cells</span>
+<span class="sd">        whenver possible, instead of pushing to the head of the list. This</span>
+<span class="sd">        may improve memory footprint at the cost of a performance penalty to</span>
+<span class="sd">        :python:`__setitem__`.</span>
+<span class="sd">    :param bool assq: Set to true to lookup with :lisp:`assq` and compare keys</span>
+<span class="sd">        with :lisp:`eq` rather than :lisp:`assoc` and :lisp:`equal`,</span>
+<span class="sd">        respectively. Use this if your keys are symbols.</span>
+<span class="sd">    :param bool prefer_symbol: Set to true to automatically coerce keys to</span>
+<span class="sd">        symbols rather than strings. If `assq` is true, you probably want this.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">place</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">assq</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prefer_symbol</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">List</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">place</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inplace</span> <span class="o">=</span> <span class="n">inplace</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefer_symbol</span> <span class="o">=</span> <span class="n">prefer_symbol</span>
+        <span class="k">if</span> <span class="n">assq</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lookup</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">equal</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">assq</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">eq</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lookup</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">equal</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">assoc</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">equal</span>
+
+    <span class="nd">@coerce</span><span class="p">(</span><span class="n">prefer_symbol_from_self</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;key&#39;</span><span class="p">})</span>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">place</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cell</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cdr</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+
+    <span class="nd">@coerce</span><span class="p">(</span><span class="n">prefer_symbol_from_self</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;key&#39;</span><span class="p">})</span>
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inplace</span><span class="p">:</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">place</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cell</span><span class="p">:</span>
+                <span class="n">setcdr</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">cons</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+    <span class="nd">@coerce</span><span class="p">(</span><span class="n">prefer_symbol_from_self</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;key&#39;</span><span class="p">})</span>
+    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">car</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">place</span><span class="p">),</span> <span class="n">key</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">bindable</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Can&#39;t delete first element of a non-bound list&quot;</span><span class="p">)</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="p">())</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">caar</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">key</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AssociationList.unique_cells"><a class="viewcode-back" href="../../../tripoli.html#tripoli.types.AssociationList.unique_cells">[docs]</a>    <span class="k">def</span> <span class="nf">unique_cells</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate over all cons cells with unique keys.&quot;&quot;&quot;</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="p">():</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">caar</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">found</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">car</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_cells</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">car</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_cells</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">cdr</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_cells</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">car</span><span class="p">(</span><span class="n">cell</span><span class="p">),</span> <span class="n">cdr</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Tripoli 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../tripoli.html" >tripoli</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Eivind Fonn.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.9.
+    </div>
+  </body>
+</html>

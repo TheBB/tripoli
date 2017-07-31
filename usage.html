@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Launching Tripoli &#8212; Tripoli 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contributing to Tripoli" href="dev.html" />
+    <link rel="prev" title="Building Tripoli" href="building.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dev.html" title="Contributing to Tripoli"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="building.html" title="Building Tripoli"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="launching-tripoli">
+<h1>Launching Tripoli<a class="headerlink" href="#launching-tripoli" title="Permalink to this headline">¶</a></h1>
+<p>To load the library from within Emacs, first make sure that the path where the
+library is installed is in your <code class="code docutils literal"><span class="pre">load-path</span></code>. Then <code class="code docutils literal"><span class="pre">(require</span>
+<span class="pre">'libtripoli)</span></code> should suffice.</p>
+<p>Once this is done, some functions should be available on the Emacs side.</p>
+<ul class="simple">
+<li><code class="code docutils literal"><span class="pre">(tripoli-import</span> <span class="pre">MODULE)</span></code> imports a Python module by name.</li>
+<li><code class="code docutils literal"><span class="pre">(tripoli-exec-str</span> <span class="pre">CODE)</span></code> runs Python code in the form of a string.</li>
+<li><code class="code docutils literal"><span class="pre">(tripoli-exec-buffer)</span></code> runs the Python code in the current buffer.</li>
+<li><code class="code docutils literal"><span class="pre">(tripoli-exec-file</span> <span class="pre">FILE)</span></code> runs a given Python file.</li>
+<li><code class="code docutils literal"><span class="pre">(tripoli-test</span> <span class="pre">&amp;rest</span> <span class="pre">ARGS)</span></code> runs the tests.</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="building.html"
+                        title="previous chapter">Building Tripoli</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="dev.html"
+                        title="next chapter">Contributing to Tripoli</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/usage.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dev.html" title="Contributing to Tripoli"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="building.html" title="Building Tripoli"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Eivind Fonn.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+    </div>
+  </body>
+</html>

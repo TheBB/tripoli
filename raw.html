@@ -1,0 +1,386 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The emacs_raw module &#8212; Tripoli 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Contributing to Tripoli" href="dev.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dev.html" title="Contributing to Tripoli"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-emacs_raw">
+<span id="the-emacs-raw-module"></span><h1>The <code class="code docutils literal"><span class="pre">emacs_raw</span></code> module<a class="headerlink" href="#module-emacs_raw" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="code docutils literal"><span class="pre">emacs_raw</span></code> module is implemented in C and provides a minimal
+interface for interfacing with Emacs.</p>
+<div class="section" id="emacs-objects">
+<h2>Emacs objects<a class="headerlink" href="#emacs-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="emacs_raw.EmacsObject">
+<em class="property">class </em><code class="descclassname">emacs_raw.</code><code class="descname">EmacsObject</code><span class="sig-paren">(</span><em>obj</em>, <em>prefer_symbol=False</em>, <em>require_symbol=False</em><span class="sig-paren">)</span><a class="headerlink" href="#emacs_raw.EmacsObject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an Emacs lisp object from <cite>obj</cite>, according to the following rules.</p>
+<ol class="arabic">
+<li><p class="first">If its argument is an <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> it will wrap the same underlying Emacs object.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This creates a <em>new Python object</em> that wraps the <em>same</em> Emacs object, however <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> instances are immutable so that hardly matters.</p>
+</div>
+</li>
+<li><p class="first">If the argument has an <code class="code docutils literal"><span class="pre">__emacs__</span></code> magic method, it is called. This method <em>must</em> return an <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> instance, and it must also accept the <cite>prefer_symbol</cite> keyword argument.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is up to the implementation of each class to decide on the appropriate meaning of <cite>prefer_symbol</cite> in this case.</p>
+</div>
+</li>
+<li><p class="first"><code class="code docutils literal"><span class="pre">None</span></code> and <code class="code docutils literal"><span class="pre">False</span></code> become <code class="code docutils literal"><span class="pre">nil</span></code>, while <code class="code docutils literal"><span class="pre">True</span></code> becomes <code class="code docutils literal"><span class="pre">t</span></code>.</p>
+</li>
+<li><p class="first">Integers and floating point numbers become their obvious Emacs lisp counterparts.</p>
+</li>
+<li><p class="first">Strings become strings unless <cite>prefer_symbol</cite> is true, in which case they become symbols.</p>
+</li>
+<li><p class="first">Lists and tuples become lists, the elements of which are coerced recursively.</p>
+</li>
+<li><p class="first">Anything else yields an error.</p>
+</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Since Emacs lisp has so many different structures for mappings, there is no automatic coercion for dicts.</p>
+</div>
+<p>If <cite>require_symbol</cite> is true and the coerced object is not a symbol, an error is thrown.</p>
+<p>Objects of type <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> wrap any kind of Emacs lisp object. As
+a rule, primitives behave like their corresponding Python primitives.
+Arithmetic with numbers should work as expected, as well as adding strings.
+Every Emacs object except <code class="code docutils literal"><span class="pre">nil</span></code> is truthy when in a boolean context.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All such operations return the expected <cite>Python</cite> types, not new
+<cite>EmacsObject</cite> objects.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Some behaviour is not yet supported, including string indexing, iterators
+(e.g. over the characters in a string, or elements of a list), or adding
+lists.</p>
+</div>
+<p>The <cite>repr</cite> of an <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> is typically a string that can be
+passed to Emacs lisp <cite>read</cite> to yield an equivalent object. The <cite>str</cite> of an
+<a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> is the same, except without quotes in case the wrapped
+object actually is a string.</p>
+<p>Emacs objects are also callable, and behave as expected if the wrapped object
+is a function. Arguments are automatically coerced to Emacs objects according
+to the above rules (with <cite>prefer_symbol</cite> false). Keyword arguments are also
+supported as follows:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">obj</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="n">kw_arg</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>  <span class="c1"># =&gt; (obj 1 &quot;str&quot; :kw-arg 1.2)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="emacs_raw.EmacsObject.is_a">
+<code class="descname">is_a</code><span class="sig-paren">(</span><em>type</em><span class="sig-paren">)</span><a class="headerlink" href="#emacs_raw.EmacsObject.is_a" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether the object has the given Emacs type.</p>
+<p>Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">eq</span></span> <span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">type-of</span></span> <span class="name variable"><span class="pre">obj</span></span><span class="punctuation"><span class="pre">)</span></span> <span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">intern</span></span> <span class="keyword"><span class="pre">type</span></span><span class="punctuation"><span class="pre">))</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="emacs_raw.EmacsObject.type">
+<code class="descname">type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#emacs_raw.EmacsObject.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string representation of the Emacs type of this object.</p>
+<p>Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">symbol-name</span></span> <span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">type-of</span></span> <span class="name variable"><span class="pre">obj</span></span><span class="punctuation"><span class="pre">))</span></span></code> in elisp.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="custom-constructors">
+<h2>Custom constructors<a class="headerlink" href="#custom-constructors" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">intern</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span></dt>
+<dd><p>Creates an <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> corresponding to the interned symbol with the given name. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">intern</span></span> <span class="name variable"><span class="pre">name</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">str</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span></dt>
+<dd><p>Creates an <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> of string type.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">int</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span></dt>
+<dd><p>Creates an <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> of integer type.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">float</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span></dt>
+<dd><p>Creates an <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> of floating point type.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">function</code><span class="sig-paren">(</span><em>callback</em>, <em>nargs_min=0</em>, <em>nargs_max=PTRDIFF_MAX</em><span class="sig-paren">)</span></dt>
+<dd><p>Creates an Emacs function object with the specificed arity which, when called, will run the given callback function and return its value to the Emacs caller, provided the return value is coercible to an <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a>.</p>
+<p>If exceptions of type <code class="xref py py-class docutils literal"><span class="pre">Signal</span></code> or <code class="xref py py-class docutils literal"><span class="pre">Throw</span></code> are raised with appropriate arguments, the corresponding effect will be propagated to Emacs. All other exceptions are propagated as error signals.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt>
+<em class="property">exception </em><code class="descclassname">emacs_raw.</code><code class="descname">Signal</code><span class="sig-paren">(</span><em>symbol</em>, <em>data</em><span class="sig-paren">)</span></dt>
+<dd><p>Represents an Emacs signal (errors, mostly). When raised from Emacs, will have two arguments, a symbol denoting the type of signal (usually <cite>error</cite>, but not always), and a list with <cite>data</cite>, usually a single string giving an error message.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><code class="descclassname">emacs_raw.</code><code class="descname">Throw</code><span class="sig-paren">(</span><em>tag</em>, <em>value</em><span class="sig-paren">)</span></dt>
+<dd><p>Represents an Emacs throw (using the <code class="code lisp docutils literal"><span class="keyword"><span class="pre">throw</span></span></code> built-in). When raised from Emacs, will have two arguments, a symbol denoting the <cite>tag</cite> and an arbitrary object denoting the <cite>value</cite>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="type-checking">
+<h2>Type checking<a class="headerlink" href="#type-checking" title="Permalink to this headline">¶</a></h2>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The following functions always return false for non-Emacs objects, even
+Python objects that behave as those types. Consider whether EAFP is for you.</p>
+</div>
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">stringp</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span></dt>
+<dd><p>Check whether the object is an Emacs string. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">stringp</span></span> <span class="name variable"><span class="pre">obj</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">integerp</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Check whether the object is an Emacs integer. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">integerp</span></span> <span class="name variable"><span class="pre">obj</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">floatp</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span></dt>
+<dd><p>Check whether the object is an Emacs float. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">floatp</span></span> <span class="name variable"><span class="pre">obj</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">numberp</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span></dt>
+<dd><p>Check whether the object is an Emacs number (integer or float). Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">numberp</span></span> <span class="name variable"><span class="pre">obj</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">number_or_marker_p</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span></dt>
+<dd><p>Check whether the object is an Emacs number or a marker. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name variable"><span class="pre">number-or-marker-p</span></span> <span class="name variable"><span class="pre">obj</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">symbolp</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span></dt>
+<dd><p>Check whether the object is an Emacs symbol. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">symbolp</span></span> <span class="name variable"><span class="pre">obj</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">consp</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span></dt>
+<dd><p>Check whether the object is an Emacs cons cell. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">consp</span></span> <span class="name variable"><span class="pre">obj</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">vectorp</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span></dt>
+<dd><p>Check whether the object is an Emacs vector. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">vectorp</span></span> <span class="name variable"><span class="pre">obj</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">functionp</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span></dt>
+<dd><p>Check whether the object is an Emacs function. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">functionp</span></span> <span class="name variable"><span class="pre">obj</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="comparison">
+<h2>Comparison<a class="headerlink" href="#comparison" title="Permalink to this headline">¶</a></h2>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The following functions <em>fail</em> for non-Emacs objects. Instead you should
+probably use the comparison operators directly, which is supported by the
+<a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> type to behave in a way that is consistent with Python
+types and their established behaviour.</p>
+</div>
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">eq</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span></dt>
+<dd><p>Check object equality using <code class="code lisp docutils literal"><span class="name builtin"><span class="pre">eq</span></span></code>. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">eq</span></span> <span class="name variable"><span class="pre">a</span></span> <span class="name variable"><span class="pre">b</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">eql</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span></dt>
+<dd><p>Check object equality using <code class="code lisp docutils literal"><span class="name builtin"><span class="pre">eql</span></span></code>. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">eql</span></span> <span class="name variable"><span class="pre">a</span></span> <span class="name variable"><span class="pre">b</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">equal</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span></dt>
+<dd><p>Check object equality using <code class="code lisp docutils literal"><span class="name builtin"><span class="pre">equal</span></span></code>. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">equal</span></span> <span class="name variable"><span class="pre">a</span></span> <span class="name variable"><span class="pre">b</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">equal_sign</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span></dt>
+<dd><p>Check object equality using <code class="code lisp docutils literal"><span class="name builtin"><span class="pre">=</span></span></code>. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">=</span></span> <span class="name variable"><span class="pre">a</span></span> <span class="name variable"><span class="pre">b</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">string_equal</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span></dt>
+<dd><p>Check object equality using <code class="code lisp docutils literal"><span class="name builtin"><span class="pre">string-equal</span></span></code>. Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">string-equal</span></span> <span class="name variable"><span class="pre">a</span></span> <span class="name variable"><span class="pre">b</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">lt</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span></dt>
+<dd><p>Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">&lt;</span></span> <span class="name variable"><span class="pre">a</span></span> <span class="name variable"><span class="pre">b</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">le</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span></dt>
+<dd><p>Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">&lt;=</span></span> <span class="name variable"><span class="pre">a</span></span> <span class="name variable"><span class="pre">b</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">gt</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span></dt>
+<dd><p>Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">&gt;</span></span> <span class="name variable"><span class="pre">a</span></span> <span class="name variable"><span class="pre">b</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">ge</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span></dt>
+<dd><p>Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">&gt;=</span></span> <span class="name variable"><span class="pre">a</span></span> <span class="name variable"><span class="pre">b</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">string_lt</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span></dt>
+<dd><p>Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">string&lt;</span></span> <span class="name variable"><span class="pre">a</span></span> <span class="name variable"><span class="pre">b</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">string_gt</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span></dt>
+<dd><p>Equivalent to <code class="code lisp docutils literal"><span class="punctuation"><span class="pre">(</span></span><span class="name builtin"><span class="pre">string&gt;</span></span> <span class="name variable"><span class="pre">a</span></span> <span class="name variable"><span class="pre">b</span></span><span class="punctuation"><span class="pre">)</span></span></code> in elisp.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The <code class="code docutils literal"><span class="pre">emacs_raw</span></code> module</a><ul>
+<li><a class="reference internal" href="#emacs-objects">Emacs objects</a></li>
+<li><a class="reference internal" href="#custom-constructors">Custom constructors</a></li>
+<li><a class="reference internal" href="#exceptions">Exceptions</a></li>
+<li><a class="reference internal" href="#type-checking">Type checking</a></li>
+<li><a class="reference internal" href="#comparison">Comparison</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dev.html"
+                        title="previous chapter">Contributing to Tripoli</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/raw.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dev.html" title="Contributing to Tripoli"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Eivind Fonn.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.4.
+    </div>
+  </body>
+</html>
