@@ -142,6 +142,121 @@ PyObject *py_function(PyObject *self, PyObject *args, PyObject *kwds)
     return EmacsObject__make(&EmacsObjectType, func);
 }
 
+DOCSTRING(py_cons,
+          "cons(car=None, cdr=None)\n\n"
+          "Creates an :class:`.EmacsObject` of cons type. "
+          "If the car is not given, the return value is nil. The cdr defaults to nil.")
+PyObject *py_cons(PyObject *self, PyObject *args)
+{
+    UNUSED(self);
+    PyObject *car = Py_None, *cdr = Py_None;
+    if (!PyArg_ParseTuple(args, "|O!O!", &EmacsObjectType, &car, &EmacsObjectType, &cdr))
+        return NULL;
+
+    if (car == Py_None)
+        return EmacsObject__make(&EmacsObjectType, em__nil);
+
+    emacs_value ecar = ((EmacsObject *)car)->val;
+
+    if (cdr == Py_None)
+        return EmacsObject__make(&EmacsObjectType, em_cons(ecar, em__nil));
+
+    emacs_value ecdr = ((EmacsObject *)cdr)->val;
+    return EmacsObject__make(&EmacsObjectType, em_cons(ecar, ecdr));
+}
+
+
+DOCSTRING(py_list,
+          "list(iterable)\n\n"
+          "Creates an :class:`.EmacsObject` of list (cons) type. "
+          "All elements of the iterable must be Emacs objects.")
+PyObject *py_list(PyObject *self, PyObject *args)
+{
+    UNUSED(self);
+    if (PyTuple_Size(args) == 0)
+        return EmacsObject__make(&EmacsObjectType, em__nil);
+
+    PyObject *arg;
+    if (!PyArg_ParseTuple(args, "O", &arg))
+        return NULL;
+
+    PyObject *iterator = PyObject_GetIter(arg);
+    if (!iterator)
+        return NULL;
+
+    emacs_value head = NULL, tail = NULL;
+    PyObject *item;
+    while ((item = PyIter_Next(iterator))) {
+        if (!PyObject_TypeCheck(item, &EmacsObjectType)) {
+            PyErr_SetString(PyExc_TypeError, "Expected EmacsObject");
+            Py_DECREF(iterator);
+            return NULL;
+        }
+        if (!head) {
+            head = em_cons(((EmacsObject *)item)->val, em__nil);
+            tail = head;
+        }
+        else {
+            emacs_value new_tail = em_cons(((EmacsObject *)item)->val, em__nil);
+            em_setcdr(tail, new_tail);
+            tail = new_tail;
+        }
+
+        Py_DECREF(item);
+    }
+
+    Py_DECREF(iterator);
+
+    if (!head)
+        head = em__nil;
+    return EmacsObject__make(&EmacsObjectType, head);
+}
+
+
+DOCSTRING(py_vector,
+          "vector(iterable)\n\n"
+          "Creates an :class:`.EmacsObject` of vector type. "
+          "All elements of the iterable must be Emacs objects.")
+PyObject *py_vector(PyObject *self, PyObject *args)
+{
+    UNUSED(self);
+
+    size_t max_args = 100, nargs = 0;
+    emacs_value *eargs = (emacs_value *)malloc(max_args * sizeof(emacs_value));
+
+    if (PyTuple_Size(args) != 0) {
+        PyObject *arg;
+        if (!PyArg_ParseTuple(args, "O", &arg))
+            return NULL;
+
+        PyObject *iterator = PyObject_GetIter(arg);
+        if (!iterator)
+            return NULL;
+        PyObject *item;
+        while ((item = PyIter_Next(iterator))) {
+            if (!PyObject_TypeCheck(item, &EmacsObjectType)) {
+                PyErr_SetString(PyExc_TypeError, "Expected EmacsObject");
+                Py_DECREF(iterator);
+                free(eargs);
+                return NULL;
+            }
+            eargs[nargs++] = ((EmacsObject *)item)->val;
+            if (nargs == max_args) {
+                max_args *= 2;
+                eargs = (emacs_value *)realloc(eargs, max_args * sizeof(emacs_value));
+            }
+
+            Py_DECREF(item);
+        }
+
+        Py_DECREF(iterator);
+    }
+
+    emacs_value vector = em_funcall(em__vector, nargs, eargs);
+    free(eargs);
+    return EmacsObject__make(&EmacsObjectType, vector);
+}
+
 
 
 // Comparison predicates
@@ -314,6 +429,9 @@ PyMethodDef methods[] = {
     METHOD(int, METH_VARARGS),
     METHOD(float, METH_VARARGS),
     METHOD(function, METH_VARARGS | METH_KEYWORDS),
+    METHOD(cons, METH_VARARGS),
+    METHOD(list, METH_VARARGS),
+    METHOD(vector, METH_VARARGS),
     METHOD(eq, METH_VARARGS),
     METHOD(eql, METH_VARARGS),
     METHOD(equal, METH_VARARGS),

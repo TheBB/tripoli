@@ -327,6 +327,61 @@ PyObject *EmacsObject_cmp(PyObject *pa, PyObject *pb, int op)
     Py_RETURN_FALSE;
 }
 
+Py_ssize_t EmacsObject_Size(PyObject *self)
+{
+    emacs_value val = ((EmacsObject *)self)->val;
+    intmax_t length = 0;
+
+    if (em_stringp(val) || em_vectorp(val)) {
+        emacs_value elength = em_funcall_1(em__length, val);
+        length = em_extract_int(elength);
+    }
+    else {
+        while (em_consp(val)) {
+            length++;
+            val = em_funcall_1(em__cdr, val);
+        }
+        if (em_truthy(val)) {
+            PyErr_SetString(PyExc_TypeError, "Improper Emacs sequence");
+            return -1;
+        }
+    }
+
+    return Py_SAFE_DOWNCAST(length, intmax_t, Py_ssize_t);
+}
+
+PyObject *EmacsObject_GetItem(PyObject *self, Py_ssize_t i)
+{
+    emacs_value val = ((EmacsObject *)self)->val;
+
+    if (em_stringp(val) || em_vectorp(val)) {
+        if (i >= EmacsObject_Size(self)) {
+            PyErr_SetString(PyExc_IndexError, "Index out of bounds");
+            return NULL;
+        }
+        emacs_value obj = em_funcall_2(em__aref, val, em_int(i));
+        return EmacsObject__make(&EmacsObjectType, obj);
+    }
+
+    while (em_consp(val) && i > 0) {
+        i--;
+        val = em_funcall_1(em__cdr, val);
+    }
+
+    if (i == 0 && em_consp(val)) {
+        emacs_value obj = em_funcall_1(em__car, val);
+        return EmacsObject__make(&EmacsObjectType, obj);
+    }
+
+    if (i > 0 && em_consp(val) || i == 0 && !em_truthy(val)) {
+        PyErr_SetString(PyExc_IndexError, "Index out of bounds");
+        return NULL;
+    }
+
+    PyErr_SetString(PyExc_TypeError, "Improper Emacs sequence");
+    return NULL;
+}
+
 
 
 // Normalized operations
@@ -514,6 +569,19 @@ static PyNumberMethods EmacsObject_NumMethods[] = {{
     0,                                // nb_inplace_matrix_multiply
 }};
 
+static PySequenceMethods EmacsObject_SequenceMethods[] = {{
+    EmacsObject_Size,                 // sq_length
+    0,                                // sq_concat
+    0,                                // sq_repeat
+    EmacsObject_GetItem,              // sq_item
+    0,                                // was_sq_slice
+    0,                                // sq_ass_item
+    0,                                // was_sq_ass_slice
+    0,                                // sq_contains
+    0,                                // sq_inplace_concat
+    0,                                // sq_inplace_repeat
+}};
+
 PyTypeObject EmacsObjectType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "emacs_raw.EmacsObject",          // tp_name
@@ -526,7 +594,7 @@ PyTypeObject EmacsObjectType = {
     0,                                // tp_as_async
     EmacsObject_repr,                 // tp_repr
     EmacsObject_NumMethods,           // tp_as_number
-    0,                                // tp_as_sequence
+    EmacsObject_SequenceMethods,      // tp_as_sequence
     0,                                // tp_as_mapping
     0,                                // tp_hash
     EmacsObject_call,                 // tp_call

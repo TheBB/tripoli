@@ -19,6 +19,14 @@ void populate()
     SIMPLE_POPULATE(nil);
     SIMPLE_POPULATE(t);
     SIMPLE_POPULATE(error);
+    SIMPLE_POPULATE(cons);
+    SIMPLE_POPULATE(setcar);
+    SIMPLE_POPULATE(setcdr);
+    SIMPLE_POPULATE(vector);
+    SIMPLE_POPULATE(car);
+    SIMPLE_POPULATE(cdr);
+    SIMPLE_POPULATE(length);
+    SIMPLE_POPULATE(aref);
     SIMPLE_POPULATE(format);
     SIMPLE_POPULATE(list);
     SIMPLE_POPULATE(integerp);
@@ -130,6 +138,11 @@ emacs_value em_function(emacs_subr func, ptrdiff_t min_nargs, ptrdiff_t max_narg
 {
     emacs_env *env = get_env();
     return env->make_function(env, min_nargs, max_nargs, func, doc, data);
+}
+
+emacs_value em_cons(emacs_value car, emacs_value cdr)
+{
+    return em_funcall_2(em__cons, car, cdr);
 }
 
 char *em_symbol_name(emacs_value val)
@@ -332,6 +345,16 @@ bool em_type_is(emacs_value val, const char *type)
     int ret = !strcmp(actual, type);
     free(actual);
     return ret;
+}
+
+void em_setcar(emacs_value cons, emacs_value car)
+{
+    em_funcall_2(em__setcar, cons, car);
+}
+
+void em_setcdr(emacs_value cons, emacs_value cdr)
+{
+    em_funcall_2(em__setcdr, cons, cdr);
 }
 
 void em_provide(const char *feature_name)

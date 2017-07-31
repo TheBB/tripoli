@@ -52,7 +52,7 @@ Custom constructors
 
 .. automodule:: emacs_raw
    :noindex:
-   :members: intern, str, int, float, function
+   :members: intern, str, int, float, function, cons, list, vector
 
 
 Exceptions

@@ -8,6 +8,8 @@
 // Internally used and persistent objects
 
 emacs_value em__nil, em__t, em__error, em__eval;
+emacs_value em__cons, em__setcar, em__setcdr, em__vector, em__car, em__cdr;
+emacs_value em__length, em__aref;
 emacs_value em__format, em__list, em__symbol_name, em__type_of;
 emacs_value em__integerp, em__floatp, em__numberp, em__stringp, em__symbolp,
     em__consp, em__vectorp, em__listp, em__functionp, em__number_or_marker_p;
@@ -117,6 +119,11 @@ emacs_value em_float(double val);
  */
 emacs_value em_function(emacs_subr func, ptrdiff_t min_nargs, ptrdiff_t max_nargs,
                         const char *doc, void *data);
+
+/**
+ * \brief Create a cons cell.
+ */
+emacs_value em_cons(emacs_value car, emacs_value cdr);
 
 /**
  * \brief Extract a symbol name.
@@ -339,6 +346,9 @@ char *em_type_of(emacs_value val);
  * \param type The type to compare against.
  */
 bool em_type_is(emacs_value val, const char *type);
+
+void em_setcar(emacs_value cons, emacs_value car);
+void em_setcdr(emacs_value cons, emacs_value cdr);
 void em_provide(const char *feature_name);
 void em_defun(emacs_subr func, const char *name,
               ptrdiff_t min_nargs, ptrdiff_t max_nargs,

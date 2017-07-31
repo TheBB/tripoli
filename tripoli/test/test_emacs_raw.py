@@ -168,6 +168,66 @@ def test_string():
     assert f_two == 2.2
 
 
+def test_cons_ctr():
+    a = e.intern('a')
+    b = e.intern('b')
+
+    assert repr(e.cons(a, b)) == '(a . b)'
+    assert repr(e.cons(a)) == '(a)'
+    assert repr(e.cons()) == 'nil'
+
+
+def test_list_ctr():
+    a = e.intern('a')
+    b = e.intern('b')
+    c = e.intern('c')
+
+    assert repr(e.list([a, b, c])) == '(a b c)'
+    assert repr(e.list((a, b, c))) == '(a b c)'
+    assert repr(e.list(iter([a, b, c]))) == '(a b c)'
+    assert repr(e.list([])) == 'nil'
+    assert repr(e.list()) == 'nil'
+    assert repr(e.list([a, b, c])[0]) == 'a'
+    assert repr(e.list([a, b, c])[-1]) == 'c'
+
+    with pytest.raises(TypeError):
+        a[0]
+
+    with pytest.raises(IndexError):
+        e.list()[0]
+
+
+def test_vector_ctr():
+    a = e.intern('a')
+    b = e.intern('b')
+    c = e.intern('c')
+
+    assert repr(e.vector([a, b, c])) == '[a b c]'
+    assert repr(e.vector((a, b, c))) == '[a b c]'
+    assert repr(e.vector(iter([a, b, c]))) == '[a b c]'
+    assert repr(e.vector([])) == '[]'
+    assert repr(e.vector()) == '[]'
+    assert repr(e.vector([a, b, c])[0]) == 'a'
+    assert repr(e.vector([a, b, c])[-1]) == 'c'
+
+    with pytest.raises(IndexError):
+        e.vector()[0]
+
+
+def test_length():
+    a = e.intern('a')
+    b = e.intern('b')
+    c = e.intern('c')
+
+    assert len(e.list([a, b, c])) == 3
+    assert len(e.vector([a, b])) == 2
+    assert len(e.str('alpha')) == 5
+    assert len(e.intern('nil')) == 0
+
+    with pytest.raises(TypeError):
+        len(e.cons(a, b))
+
+
 def test_cons():
     cons = e.intern('cons')
     assert e.functionp(cons)
