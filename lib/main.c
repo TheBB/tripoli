@@ -44,6 +44,7 @@ int emacs_module_init(struct emacs_runtime *ert)
 
     maybe_run_init();
 
+    pop_env();
     return 0;
 }
 
