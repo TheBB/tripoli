@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Contributing to Tripoli &#8212; Tripoli 0.1 documentation</title>
+    <title>Contributing to Tripoli &#8212; Tripoli 0.2 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="usage.html" title="Launching Tripoli"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -62,22 +62,12 @@ form.</p>
 </pre></div>
 </div>
 <p>To run Emacs with Tripoli, you can use the <code class="code docutils literal"><span class="pre">make</span> <span class="pre">run</span></code> target.</p>
-<p>Run the tests with pytest using</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">check</span>
-</pre></div>
-</div>
-<p>or</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">check</span><span class="o">-</span><span class="n">verbose</span>
-</pre></div>
-</div>
-<p>Or use the <code class="code docutils literal"><span class="pre">test</span></code> script in the build directory to pass additional
-arguments to pytest (such as <code class="code docutils literal"><span class="pre">-v</span></code>).</p>
-<p>You can enter a REPL using</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">repl</span>
-</pre></div>
-</div>
-<p>When starting a REPL, the modules <code class="code docutils literal"><span class="pre">emacs_raw</span></code> and <code class="code docutils literal"><span class="pre">emacs</span></code> are
-automatically imported as <code class="code docutils literal"><span class="pre">er</span></code> and <code class="code docutils literal"><span class="pre">e</span></code>, respectively.</p>
+<p>Run the tests with pytest using the <code class="code docutils literal"><span class="pre">make</span> <span class="pre">check</span></code> target or the <code class="code docutils literal"><span class="pre">make</span>
+<span class="pre">check-verbose</span></code> target.</p>
+<p>You can run Emacs with the built library using the <code class="code docutils literal"><span class="pre">make</span> <span class="pre">run</span></code> target or
+the <code class="code docutils literal"><span class="pre">make</span> <span class="pre">run-bare</span></code> target (which does not run your init).</p>
+<p>You can enter a REPL the using <code class="code docutils literal"><span class="pre">make</span> <span class="pre">repl</span></code> target. When starting a REPL,
+the module <code class="code docutils literal"><span class="pre">emacs_raw</span></code> is automatically imported as <code class="code docutils literal"><span class="pre">er</span></code>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">So far I have not been able to embed IPython or anything more sophisticated than
@@ -133,7 +123,7 @@ the default Python REPL (help appreciated).</p>
         <li class="right" >
           <a href="usage.html" title="Launching Tripoli"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

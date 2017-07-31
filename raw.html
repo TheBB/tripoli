@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>The emacs_raw module &#8212; Tripoli 0.1 documentation</title>
+    <title>The emacs_raw module &#8212; Tripoli 0.2 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -41,7 +41,7 @@
         <li class="right" >
           <a href="dev.html" title="Contributing to Tripoli"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -163,6 +163,24 @@ supported as follows:</p>
 <code class="descclassname">emacs_raw.</code><code class="descname">function</code><span class="sig-paren">(</span><em>callback</em>, <em>nargs_min=0</em>, <em>nargs_max=PTRDIFF_MAX</em><span class="sig-paren">)</span></dt>
 <dd><p>Creates an Emacs function object with the specificed arity which, when called, will run the given callback function and return its value to the Emacs caller, provided the return value is coercible to an <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a>.</p>
 <p>If exceptions of type <code class="xref py py-class docutils literal"><span class="pre">Signal</span></code> or <code class="xref py py-class docutils literal"><span class="pre">Throw</span></code> are raised with appropriate arguments, the corresponding effect will be propagated to Emacs. All other exceptions are propagated as error signals.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">cons</code><span class="sig-paren">(</span><em>car=None</em>, <em>cdr=None</em><span class="sig-paren">)</span></dt>
+<dd><p>Creates an <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> of cons type. If the car is not given, the return value is nil. The cdr defaults to nil.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">list</code><span class="sig-paren">(</span><em>iterable</em><span class="sig-paren">)</span></dt>
+<dd><p>Creates an <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> of list (cons) type. All elements of the iterable must be Emacs objects.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descclassname">emacs_raw.</code><code class="descname">vector</code><span class="sig-paren">(</span><em>iterable</em><span class="sig-paren">)</span></dt>
+<dd><p>Creates an <a class="reference internal" href="#emacs_raw.EmacsObject" title="emacs_raw.EmacsObject"><code class="xref py py-class docutils literal"><span class="pre">EmacsObject</span></code></a> of vector type. All elements of the iterable must be Emacs objects.</p>
 </dd></dl>
 
 </div>
@@ -375,7 +393,7 @@ types and their established behaviour.</p>
         <li class="right" >
           <a href="dev.html" title="Contributing to Tripoli"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

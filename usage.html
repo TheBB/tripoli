@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Launching Tripoli &#8212; Tripoli 0.1 documentation</title>
+    <title>Launching Tripoli &#8212; Tripoli 0.2 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="building.html" title="Building Tripoli"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -65,8 +65,12 @@ library is installed is in your <code class="code docutils literal"><span class=
 <li><code class="code docutils literal"><span class="pre">(tripoli-exec-str</span> <span class="pre">CODE)</span></code> runs Python code in the form of a string.</li>
 <li><code class="code docutils literal"><span class="pre">(tripoli-exec-buffer)</span></code> runs the Python code in the current buffer.</li>
 <li><code class="code docutils literal"><span class="pre">(tripoli-exec-file</span> <span class="pre">FILE)</span></code> runs a given Python file.</li>
+<li><code class="code docutils literal"><span class="pre">(tripoli-repl)</span></code> runs a Python REPL in the terminal.</li>
 <li><code class="code docutils literal"><span class="pre">(tripoli-test</span> <span class="pre">&amp;rest</span> <span class="pre">ARGS)</span></code> runs the tests.</li>
 </ul>
+<p>When loaded, Tripoli will run one of the files <code class="code docutils literal"><span class="pre">~/.emacs.py</span></code> or
+<code class="code docutils literal"><span class="pre">~/.emacs.d/init.py</span></code> if present. You can inhibit this behavior by binding
+<code class="code docutils literal"><span class="pre">tripoli-inhibit-init</span></code> to a non-nil value before loading Tripoli.</p>
 </div>
 
 
@@ -117,7 +121,7 @@ library is installed is in your <code class="code docutils literal"><span class=
         <li class="right" >
           <a href="building.html" title="Building Tripoli"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Tripoli 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
