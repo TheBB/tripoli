@@ -12,9 +12,6 @@
 #include "main.h"
 
 
-int plugin_is_GPL_compatible;
-
-
 int emacs_module_init(struct emacs_runtime *ert)
 {
     // Check if Emacs version is new enough
