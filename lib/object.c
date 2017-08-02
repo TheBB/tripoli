@@ -27,10 +27,11 @@ bool EmacsObject__coerce(PyObject *arg, bool prefer_symbol, emacs_value *ret)
         PyObject *kwargs = PyDict_New();
         PyDict_SetItemString(kwargs, "prefer_symbol", prefer_symbol ? Py_True : Py_False);
 
+        PyObject *method = PyObject_GetAttrString(arg, "__emacs__");
         PyObject *pyret = PyObject_Call(PyObject_GetAttrString(arg, "__emacs__"), args, kwargs);
-        Py_DECREF(args); Py_DECREF(kwargs);
+        Py_DECREF(args); Py_DECREF(kwargs); Py_DECREF(method);
 
-        if (!pyret || PyObject_TypeCheck(pyret, &EmacsObjectType)) {
+        if (!pyret || !PyObject_TypeCheck(pyret, &EmacsObjectType)) {
             Py_XDECREF(pyret);
             return false;
         }
