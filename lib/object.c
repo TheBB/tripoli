@@ -391,13 +391,17 @@ static PyObject *EmacsObject__normalize(PyObject *self)
 {
     emacs_value val = ((EmacsObject *)self)->val;
 
+    PyObject *ret = NULL;
+
     if (em_integerp(val))
-        return PyNumber_Long(self);
+        ret = PyNumber_Long(self);
     else if (em_floatp(val))
-        return PyNumber_Float(self);
+        ret = PyNumber_Float(self);
     else if (em_stringp(val))
-        return PyObject_Str(self);
-    return NULL;
+        ret = PyObject_Str(self);
+
+    Py_XINCREF(ret);
+    return ret;
 }
 
 PyObject *EmacsObject_power(PyObject *self, PyObject *other, PyObject *mod)
@@ -418,9 +422,9 @@ PyObject *EmacsObject_power(PyObject *self, PyObject *other, PyObject *mod)
     else
         PyErr_SetString(PyExc_TypeError, "Unsupported operand types");
 
-    if (c_self != self) Py_XDECREF(c_self);
-    if (c_other != other) Py_XDECREF(c_other);
-    if (c_mod != mod) Py_XDECREF(c_mod);
+    Py_XDECREF(c_self);
+    Py_XDECREF(c_other);
+    Py_XDECREF(c_mod);
 
     return ret;
 }
@@ -441,8 +445,8 @@ PyObject *EmacsObject_power(PyObject *self, PyObject *other, PyObject *mod)
         else                                                                    \
             PyErr_SetString(PyExc_TypeError, "Unsupported operand types");      \
                                                                                 \
-        if (c_self != self) Py_XDECREF(c_self);                                 \
-        if (c_other != other) Py_XDECREF(c_other);                              \
+        Py_XDECREF(c_self);                                                     \
+        Py_XDECREF(c_other);                                                    \
         return ret;                                                             \
     }
 
@@ -472,7 +476,7 @@ NORMALIZED_BINARY_OPERATION(true_divide, PyNumber_TrueDivide)
         else                                                                    \
             PyErr_SetString(PyExc_TypeError, "Unsupported operand types");      \
                                                                                 \
-        if (c_self != self) Py_XDECREF(c_self);                                 \
+        Py_XDECREF(c_self);                                                     \
         return ret;                                                             \
     }
 
