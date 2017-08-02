@@ -3,7 +3,8 @@ from inspect import signature, Parameter
 import inspect
 from enum import IntEnum
 
-from emacs_raw import EmacsObject
+from tripoli.namespace import EmacsNamespace, bound
+from emacs_raw import EmacsObject, intern, symbolp
 
 
 class CoercionStrategy(IntEnum):
@@ -11,6 +12,10 @@ class CoercionStrategy(IntEnum):
     coerce = 1                  # Coerce
     coerce_args = 2             # Coerce each element and form tuple
     coerce_kwargs = 3           # Coerce each value and form dict
+
+
+_setq = intern('set')
+_symbol_value = intern('symbol-value')
 
 
 def coerce(default=True, exceptional=(), symbol=False, symbol_exceptional=()):
@@ -81,3 +86,61 @@ def coerce(default=True, exceptional=(), symbol=False, symbol_exceptional=()):
             return fn(*binding.args, **binding.kwargs)
         return ret
     return decorator
+
+
+class PlaceOrSymbol:
+    """A generic class for wrapping an Emacs value that can either be tied to a
+    symbol (representing that symbol's value binding) or, otherwise, any other
+    Emacs value.
+
+    This is useful in certain cases. For example, an Emacs list technically
+    only a cons cell, but certain mutable operations (deletion, for example)
+    may be impossible to perform in-place without reassigning the head of the
+    list. That is why functions like Emacs' *delete* both mutates a list *and*
+    returns the new head cons cell, and why the Emacs manual recommends
+    expressions such as
+
+    .. code:: lisp
+
+       (setq foo (delete element foo))
+
+    to correctly perform deletion.
+
+    :param place: The place to track. May be a symbol, an Emacs namespace
+        object or a string (all interpreted as symbols), or any other Emacs
+        object or *None*.
+    """
+    def __init__(self, place=None):
+        if place is None:
+            self._place = intern('nil')
+        elif isinstance(place, EmacsNamespace):
+            self._symbol = place[bound(exists=False)]
+        elif isinstance(place, str):
+            self._symbol = intern(place)
+        elif not isinstance(place, EmacsObject):
+            raise TypeError('Invalid place')
+        elif not symbolp(place):
+            self._place = place
+        else:
+            self._symbol = place
+
+    def __emacs__(self, prefer_symbol=False):
+        return self.place
+
+    @property
+    def place(self):
+        """Return the actual Emacs object being tracked. If tracking a symbol,
+        returns that symbol's value binding.
+        """
+        if hasattr(self, '_place'):
+            return self._place
+        return _symbol_value(self._symbol)
+
+    def bind(self, value):
+        """Rebind to a new object. If tracking a symbol, update that symbol's
+        value binding.
+        """
+        if hasattr(self, '_place'):
+            self._place = value
+        else:
+            _setq(self._symbol, value)
