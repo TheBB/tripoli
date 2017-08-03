@@ -189,7 +189,7 @@ emacs_value exec_tests(emacs_env *env, ptrdiff_t nargs, emacs_value *args, void 
     UNUSED(data);
     push_env(env);
 
-    PyObject *module = PyImport_ImportModule("tripoli.test");
+    PyObject *module = PyImport_ImportModule("tripoli_tests");
     if (!module) {
         em_error("Failed to import test suite");
         POP_ENV_AND_RETURN(em__nil);

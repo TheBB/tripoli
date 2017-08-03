@@ -10,9 +10,8 @@ setup(
     author_email='evfonn@gmail.com',
     license='GPL3',
     url='https://github.com/TheBB/tripoli',
-    packages=['tripoli'],
+    packages=['tripoli', 'tripoli_tests'],
     install_requires=[
-        'click',
         'pytest',
         'sphinx',
         'ipython',
