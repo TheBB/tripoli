@@ -5,7 +5,7 @@ import emacs_raw as er
 
 def test_all():
 
-    @coerce(True)
+    @coerce()
     def test(a, b, c, *args, **kwargs):
         assert isinstance(a, er.EmacsObject)
         assert isinstance(b, er.EmacsObject)
@@ -25,53 +25,9 @@ def test_all():
     test('a', [34], er.intern('q'), 'b', 'c', q='d')
 
 
-def test_none():
-
-    @coerce(False)
-    def test(a, b, c, *args, **kwargs):
-        assert not isinstance(a, er.EmacsObject)
-        assert not isinstance(b, er.EmacsObject)
-        assert not isinstance(c, er.EmacsObject)
-
-        assert not isinstance(args, er.EmacsObject)
-        assert not isinstance(kwargs, er.EmacsObject)
-
-        for arg in args:
-            assert not isinstance(arg, er.EmacsObject)
-        for name, kwarg in kwargs.items():
-            assert not isinstance(name, er.EmacsObject)
-            assert not isinstance(kwarg, er.EmacsObject)
-
-    test(1, 2, 3)
-    test('a', [34], 'q')
-    test('a', [34], 'q', 'b', 'c', q='d')
-
-
-def test_none_but_passed():
-
-    @coerce(False)
-    def test(a, b, c, *args, **kwargs):
-        assert not isinstance(a, er.EmacsObject)
-        assert not isinstance(b, er.EmacsObject)
-        assert isinstance(c, er.EmacsObject)
-
-        assert not isinstance(args, er.EmacsObject)
-        assert not isinstance(kwargs, er.EmacsObject)
-
-        for arg in args:
-            assert not isinstance(arg, er.EmacsObject)
-        for name, kwarg in kwargs.items():
-            assert not isinstance(name, er.EmacsObject)
-            assert not isinstance(kwarg, er.EmacsObject)
-
-    test(1, 2, er.int(3))
-    test('a', [34], er.intern('q'))
-    test('a', [34], er.intern('q'), 'b', 'c', q='d')
-
-
 def test_almost_all():
 
-    @coerce(True, ['b'])
+    @coerce('b', invert=True)
     def test(a, b, c, *args, **kwargs):
         assert isinstance(a, er.EmacsObject)
         assert not isinstance(b, er.EmacsObject)
@@ -93,7 +49,7 @@ def test_almost_all():
 
 def test_almost_all_but_passed():
 
-    @coerce(True, ['c'])
+    @coerce('c', invert=True)
     def test(a, b, c, *args, **kwargs):
         assert isinstance(a, er.EmacsObject)
         assert isinstance(b, er.EmacsObject)
@@ -115,7 +71,7 @@ def test_almost_all_but_passed():
 
 def test_almost_none():
 
-    @coerce(False, ['a'])
+    @coerce('a')
     def test(a, b, c, *args, **kwargs):
         assert isinstance(a, er.EmacsObject)
         assert not isinstance(b, er.EmacsObject)
@@ -137,7 +93,7 @@ def test_almost_none():
 
 def test_almost_none_but_passed():
 
-    @coerce(False, ['a'])
+    @coerce('a')
     def test(a, b, c, *args, **kwargs):
         assert isinstance(a, er.EmacsObject)
         assert not isinstance(b, er.EmacsObject)
@@ -159,7 +115,7 @@ def test_almost_none_but_passed():
 
 def test_avoid_args():
 
-    @coerce(True, ['args'])
+    @coerce('args', invert=True)
     def test(a, b, *args):
         assert isinstance(a, er.EmacsObject)
         assert isinstance(b, er.EmacsObject)
@@ -171,7 +127,7 @@ def test_avoid_args():
 
 def test_avoid_kwargs():
 
-    @coerce(True, ['kwargs'])
+    @coerce('kwargs', invert=True)
     def test(a, b, **kwargs):
         assert isinstance(a, er.EmacsObject)
         assert isinstance(b, er.EmacsObject)
@@ -183,7 +139,7 @@ def test_avoid_kwargs():
 
 def test_prefer_symbol():
 
-    @coerce(True, (), True)
+    @coerce(prefer_symbol=True)
     def test(a):
         assert er.symbolp(a)
 
@@ -191,33 +147,9 @@ def test_prefer_symbol():
     test(er.intern('a'))
 
 
-def test_prefer_symbol_almost_all():
-
-    @coerce(True, (), True, ('b'))
-    def test(a, b, c):
-        assert er.symbolp(a)
-        assert not er.symbolp(b)
-        assert er.symbolp(c)
-
-    test('a', 'b', 'c')
-    test(er.intern('a'), 'b', 'c')
-
-
-def test_prefer_symbol_almost_none():
-
-    @coerce(True, (), False, ('b'))
-    def test(a, b, c):
-        assert not er.symbolp(a)
-        assert er.symbolp(b)
-        assert not er.symbolp(c)
-
-    test('a', 'b', 'c')
-    test('a', er.intern('b'), 'c')
-
-
 def test_prefer_symbol_none_but_passed():
 
-    @coerce(True, (), False)
+    @coerce(prefer_symbol=False)
     def test(a, b, c):
         assert not er.symbolp(a)
         assert er.symbolp(b)
@@ -236,7 +168,7 @@ def test_prefer_symbol_self():
     no = TestSelf()
     no.prefer_symbol = False
 
-    @coerce(True, (), 'prefer_symbol')
+    @coerce(prefer_symbol='prefer_symbol')
     def test(self, a):
         assert er.symbolp(a) is self.prefer_symbol
 

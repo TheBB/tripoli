@@ -52,11 +52,11 @@ class List(PlaceOrSymbol, MutableSequence):
     def __len__(self):
         return int(_length(self.place))
 
-    @coerce(False, ('value',))
+    @coerce('value')
     def __setitem__(self, index, value):
         _setcar(self.cell(index), value)
 
-    @coerce(False, ('value',))
+    @coerce('value')
     def insert(self, index, value):
         """Insert an element at a given index."""
         if index == 0 and self.place:        # Insert before current head

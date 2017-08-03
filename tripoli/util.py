@@ -18,21 +18,19 @@ _setq = intern('set')
 _symbol_value = intern('symbol-value')
 
 
-def coerce(default=True, exceptional=(), symbol=False, symbol_exceptional=()):
+def coerce(args=(), invert=False, prefer_symbol=False):
     """Decorator for coercing arguments to Emacs objects.
 
-    :param default: If true, all arguments are coerced by default.
-    :param exceptional: Arguments for which the default behaviour is inverted,
-        i.e. if *default* is true, this is a list of arguments that will *not*
-        be coerced.
-    :param symbol: If true, string-like arguments will be coerced to symbols if
-        possible. If false, they remain strings. Optionally, it may be a string,
-        in which case an argument named *self* must be present, and objects
-        passed as *self* must have an attribute with the same name as the value
-        of `symbol`. The truth value of this attribute then determines the
-        symbol-coercing behaviour.
-    :param symbol_exceptional: Arguments for which the default meaning of
-        *symbol* is inverted.
+    :param args: An argument or list of argument names to coerce. If empty, all
+        arguments are coerced.
+    :param invert: If *true*, the meaning of *args* will be inverted, i.e. all
+        arguments *not* in this list will be coerced.
+    :param prefer_symbol: If true, string-like arguments will be coerced to
+        symbols if possible. If false, they remain strings. Optionally, it may
+        be a string, in which case an argument named *self* must be present,
+        and objects passed as *self* must have an attribute with the same name
+        as the value of `symbol`. The truth value of this attribute then
+        determines the symbol-coercing behaviour.
 
     This decorator will work with :code:`*args` and :code:`**kwargs` as
     expected, that is, the elements themselves are coerced, not the collections
@@ -40,11 +38,18 @@ def coerce(default=True, exceptional=(), symbol=False, symbol_exceptional=()):
 
     .. note:: Arguments named *self* will never be coerced.
     """
+    if isinstance(args, str):
+        args = (args,)
+
     def decorator(fn):
+
         # Establish the exceptional and default coercion strategies
-        strategies = {name: CoercionStrategy(int(not default)) for name in exceptional}
-        default_strategy = CoercionStrategy(int(default))
-        symbol_strategies = {name: not symbol for name in symbol_exceptional}
+        if args:
+            default_strategy = CoercionStrategy(int(invert))
+            strategies = {name: CoercionStrategy(int(not invert)) for name in args}
+        else:
+            default_strategy = CoercionStrategy.coerce
+            strategies = {}
 
         signature = inspect.signature(fn)
 
@@ -64,23 +69,22 @@ def coerce(default=True, exceptional=(), symbol=False, symbol_exceptional=()):
             binding = signature.bind(*args, **kwargs)
 
             # Check whether to prefer symbols or not
-            if isinstance(symbol, str):
-                default_symbol = getattr(binding.arguments['self'], symbol)
+            if isinstance(prefer_symbol, str):
+                symbol = getattr(binding.arguments['self'], prefer_symbol)
             else:
-                default_symbol = symbol
+                symbol = prefer_symbol
 
             # Coerce each argument as necessary
             for key, value in binding.arguments.items():
                 strategy = strategies.get(key, default_strategy)
                 if not strategy:
                     continue
-                prefer_symbol = symbol_strategies.get(key, default_symbol)
                 if strategy == CoercionStrategy.coerce:
-                    value = EmacsObject(value, prefer_symbol=prefer_symbol)
+                    value = EmacsObject(value, prefer_symbol=symbol)
                 elif strategy == CoercionStrategy.coerce_args:
-                    value = tuple(EmacsObject(v, prefer_symbol=prefer_symbol) for v in value)
+                    value = tuple(EmacsObject(v, prefer_symbol=symbol) for v in value)
                 elif strategy == CoercionStrategy.coerce_kwargs:
-                    value = {n: EmacsObject(v, prefer_symbol=prefer_symbol) for n, v in value.items()}
+                    value = {n: EmacsObject(v, prefer_symbol=symbol) for n, v in value.items()}
                 binding.arguments[key] = value
 
             return fn(*binding.args, **binding.kwargs)
