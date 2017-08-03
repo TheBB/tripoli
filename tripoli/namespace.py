@@ -10,7 +10,7 @@ _symbol_value = emacs_raw.intern('symbol-value')
 _symbol_function = emacs_raw.intern('symbol-function')
 _fboundp = emacs_raw.intern('fboundp')
 _boundp = emacs_raw.intern('boundp')
-_set = emacs_raw.intern('set')
+_setq = emacs_raw.intern('set')
 
 
 class EmacsNamespaceFinder:
@@ -253,7 +253,11 @@ class EmacsNamespace:
             self.__dict__[name] = value
         else:
             sym = getattr(self, name)[bound(exists=False)]
-            _set(sym, value)
+            _setq(sym, value)
+
+    def __setitem__(self, name, value):
+        sym = self[name][bound(exists=False)]
+        _setq(sym, value)
 
     def __repr__(self):
         return 'EmacsNamespace({})'.format(str(self[sym]))

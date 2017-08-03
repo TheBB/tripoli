@@ -24,8 +24,9 @@ class List(PlaceOrSymbol, MutableSequence):
         information.
     """
 
-    def __init__(self, place=None):
+    def __init__(self, place=None, prefer_symbol=False):
         PlaceOrSymbol.__init__(self, place)
+        self.prefer_symbol = prefer_symbol
 
     def cells(self):
         """Iterate over all cons cells in the list."""
@@ -52,11 +53,11 @@ class List(PlaceOrSymbol, MutableSequence):
     def __len__(self):
         return int(_length(self.place))
 
-    @coerce('value')
+    @coerce('value', prefer_symbol='prefer_symbol')
     def __setitem__(self, index, value):
         _setcar(self.cell(index), value)
 
-    @coerce('value')
+    @coerce('value', prefer_symbol='prefer_symbol')
     def insert(self, index, value):
         """Insert an element at a given index."""
         if index == 0 and self.place:        # Insert before current head
