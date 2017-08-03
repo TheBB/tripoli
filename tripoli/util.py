@@ -127,6 +127,9 @@ class PlaceOrSymbol:
     def __emacs__(self, prefer_symbol=False):
         return self.place
 
+    def __bool__(self):
+        return bool(self.place)
+
     @property
     def place(self):
         """Return the actual Emacs object being tracked. If tracking a symbol,
@@ -136,6 +139,7 @@ class PlaceOrSymbol:
             return self._place
         return _symbol_value(self._symbol)
 
+    @coerce()
     def bind(self, value):
         """Rebind to a new object. If tracking a symbol, update that symbol's
         value binding.
