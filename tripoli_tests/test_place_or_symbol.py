@@ -10,7 +10,7 @@ def test_place():
     assert er.eq(er.EmacsObject(obj), er.intern('nil'))
 
     new_place = er.list([er.int(1), er.int(2), er.int(3)])
-    obj.bind(new_place)
+    obj._bind(new_place)
 
     assert er.eq(obj.place, new_place)
     assert er.eq(er.EmacsObject(obj), new_place)
@@ -28,7 +28,7 @@ def test_symbol():
     assert er.eq(er.EmacsObject(obj), mylist)
 
     mylist = er.list([er.int(1), er.int(2), er.int(3), er.int(4)])
-    obj.bind(mylist)
+    obj._bind(mylist)
 
     assert er.eq(obj._symbol, er.intern('alpha'))
     assert er.eq(obj.place, mylist)

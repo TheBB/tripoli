@@ -144,7 +144,7 @@ class PlaceOrSymbol:
         return _symbol_value(self._symbol)
 
     @coerce()
-    def bind(self, value):
+    def _bind(self, value):
         """Rebind to a new object. If tracking a symbol, update that symbol's
         value binding.
         """

@@ -22,40 +22,50 @@ class List(PlaceOrSymbol, MutableSequence):
 
     :param place: The list to wrap. See :class:`.PlaceOrSymbol` for more
         information.
+    :param prefer_symbol: If true, elements are coerced to symbols when
+        possible.
     """
 
-    def __init__(self, place=None, prefer_symbol=False):
-        PlaceOrSymbol.__init__(self, place)
+    def __init__(self, initializer=None, bind=None, prefer_symbol=None):
+        PlaceOrSymbol.__init__(self, bind)
         self.prefer_symbol = prefer_symbol
+        if initializer is not None:
+            self.clear()
+            try:
+                initializer = reversed(initializer)
+            except TypeError:
+                initializer = list(initializer)[::-1]
+            for init in initializer:
+                self.push(init)
 
-    def cells(self):
+    def _cells(self):
         """Iterate over all cons cells in the list."""
         p = self.place
         while p:
             yield p
             p = _cdr(p)
 
-    def cell(self, index):
+    def _cell(self, index):
         """Retrieve the cons cell at a given index."""
-        for cell in self.cells():
+        for cell in self._cells():
             if index == 0:
                 return cell
             index -= 1
         raise IndexError('List index out of range')
 
     def __iter__(self):
-        for cell in self.cells():
+        for cell in self._cells():
             yield _car(cell)
 
     def __getitem__(self, index):
-        return _car(self.cell(index))
+        return _car(self._cell(index))
 
     def __len__(self):
         return int(_length(self.place))
 
     @coerce('value', prefer_symbol='prefer_symbol')
     def __setitem__(self, index, value):
-        _setcar(self.cell(index), value)
+        _setcar(self._cell(index), value)
 
     @coerce('value', prefer_symbol='prefer_symbol')
     def insert(self, index, value):
@@ -63,9 +73,9 @@ class List(PlaceOrSymbol, MutableSequence):
         if index == 0 and self.place:        # Insert before current head
             _push_head(self.place, value)
         elif index == 0 and not self.place:  # Empty, create new head
-            self.bind(cons(value))
+            self._bind(cons(value))
         else:
-            prev = self.cell(index - 1)
+            prev = self._cell(index - 1)
             cell = _cdr(prev)
             if cell:                         # Insert before interior cell
                 _push_head(cell, value)
@@ -80,7 +90,7 @@ class List(PlaceOrSymbol, MutableSequence):
 
     def clear(self):
         """Set the list to :lisp:`nil`."""
-        self.bind(None)
+        self._bind(None)
 
     def delete(self, indices):
         """Delete elements associated with a list of indices."""
@@ -101,7 +111,7 @@ class List(PlaceOrSymbol, MutableSequence):
             if ind == 0:
                 cell = _cdr(cell)
                 track += 1
-                self.bind(cell)
+                self._bind(cell)
 
             # Skip to the cell BEFORE the one we want to delete, then set its cdr.
             else:

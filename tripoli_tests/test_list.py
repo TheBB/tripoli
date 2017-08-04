@@ -20,22 +20,22 @@ def py_list(chars):
 def test_construct():
     eo = em_list('abc')
 
-    l = List(eo)
+    l = List(bind=eo)
     assert list(l) == py_list('abc')
 
     setq(_('test'), eo)
-    l = List(_('test'))
+    l = List(bind='test')
     assert list(l) == py_list('abc')
 
     import emacs
-    l = List(emacs.test)
+    l = List(bind=emacs.test)
     assert list(l) == py_list('abc')
 
 
 def test_getitem():
     eo = em_list('abcde')
 
-    l = List(eo)
+    l = List(bind=eo)
     assert l[0] == _('a')
     assert l[1] == _('b')
     assert l[2] == _('c')
@@ -46,7 +46,7 @@ def test_getitem():
 def test_setitem():
     eo = em_list('abc')
 
-    l = List(eo)
+    l = List(bind=eo)
     l[1] = _('y')
     assert list(l) == py_list('ayc')
     l[0] = _('q')
@@ -56,13 +56,13 @@ def test_setitem():
 def test_delitem():
     eo = em_list('abcde')
 
-    l = List(eo)
+    l = List(bind=eo)
     del l[1]
     assert list(l) == py_list('acde')
 
     eo = em_list('abcde')
     setq(_('test'), eo)
-    l = List(_('test'))
+    l = List(bind='test')
     del l[0]
     assert list(l) == py_list('bcde')
 
@@ -70,10 +70,10 @@ def test_delitem():
 def test_delete():
     eo = em_list(ascii_lowercase)
 
-    l = List(eo)
+    l = List(bind=eo)
 
     setq(_('test'), eo)
-    l = List(_('test'))
+    l = List(bind='test')
     l.delete([0, 4, 9, 10, 11, 25])
     assert list(l) == py_list('bcdfghimnopqrstuvwxy')
 
@@ -82,7 +82,7 @@ def test_empty():
     l = List()
 
     setq(_('test'), er.intern('nil'))
-    l = List(_('test'))
+    l = List(bind='test')
     l.push(_('a'))
     l.push(_('b'))
     l.push(_('c'))
@@ -93,7 +93,7 @@ def test_insert():
     l = List()
 
     setq(_('test'), er.intern('nil'))
-    l = List(_('test'))
+    l = List(bind=_('test'))
     l.insert(0, _('a'))
     l.insert(0, _('b'))
     l.insert(1, _('c'))
@@ -105,9 +105,21 @@ def test_insert():
 
 def test_clear():
     eo = em_list(ascii_lowercase)
-    l = List(eo)
+    l = List(bind=eo)
 
     setq(_('test'), eo)
-    l = List(_('test'))
+    l = List(bind=_('test'))
     l.clear()
     assert list(l) == []
+
+
+def test_initializer():
+    l = List(ascii_lowercase)
+    assert list(l) == list(ascii_lowercase)
+
+    l = List(ascii_lowercase, prefer_symbol=True)
+    assert list(l) == py_list(ascii_lowercase)
+
+    l = List(ascii_lowercase, bind='test')
+    assert er.eq(l.place, _('symbol-value')(_('test')))
+    assert list(l) == list(ascii_lowercase)
