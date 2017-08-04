@@ -42,6 +42,9 @@ def test_getitem():
     assert l[3] == _('d')
     assert l[4] == _('e')
 
+    with pytest.raises(IndexError):
+        l[5]
+
 
 def test_setitem():
     eo = em_list('abc')
@@ -65,6 +68,9 @@ def test_delitem():
     l = List(bind='test')
     del l[0]
     assert list(l) == py_list('bcde')
+
+    with pytest.raises(IndexError):
+        del l[10]
 
 
 def test_delete():
@@ -122,4 +128,7 @@ def test_initializer():
 
     l = List(ascii_lowercase, bind='test')
     assert er.eq(l.place, _('symbol-value')(_('test')))
+    assert list(l) == list(ascii_lowercase)
+
+    l = List((a for a in ascii_lowercase))
     assert list(l) == list(ascii_lowercase)
