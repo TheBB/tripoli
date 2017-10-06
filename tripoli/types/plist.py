@@ -54,6 +54,21 @@ class PList(PlaceOrSymbol, MutableMapping):
             for key, value in initializer:
                 self[key] = value
 
+    @classmethod
+    def constructor(cls, **params):
+        def mkplist(*args, **kwargs):
+            initializer = None
+            if args or kwargs:
+                initializer = OrderedDict()
+                if args:
+                    initializer.update(args[0])
+                initializer.update({
+                    key.replace('_', '-'): value
+                    for key, value in kwargs.items()
+                })
+            return cls(initializer, **params)
+        return mkplist
+
     def _cells(self):
         """Iterate over every key cell in the plist (that is, every second cons
         cell).

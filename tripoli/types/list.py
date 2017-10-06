@@ -38,6 +38,12 @@ class List(PlaceOrSymbol, MutableSequence):
             for init in initializer:
                 self.push(init)
 
+    @classmethod
+    def constructor(cls, **params):
+        def mklist(initializer=None):
+            return cls(initializer, **params)
+        return mklist
+
     def _cells(self):
         """Iterate over all cons cells in the list."""
         p = self.place
