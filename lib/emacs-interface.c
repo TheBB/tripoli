@@ -22,6 +22,7 @@ void populate()
     SIMPLE_POPULATE(eval);
     SIMPLE_POPULATE(boundp);
     SIMPLE_POPULATE(cons);
+    SIMPLE_POPULATE(quote);
     SIMPLE_POPULATE(setcar);
     SIMPLE_POPULATE(setcdr);
     SIMPLE_POPULATE(vector);

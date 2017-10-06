@@ -491,7 +491,6 @@ NORMALIZED_UNARY_OPERATION(invert, PyNumber_Invert)
 
 // Emacs type checking
 
-
 DOCSTRING(EmacsObject_type,
           "type()\n\n"
           "Return a string representation of the Emacs type of this object.\n\n"
@@ -522,6 +521,18 @@ PyObject *EmacsObject_is_a(PyObject *self, PyObject *args)
 
 
 
+// Miscellaneous
+
+PyObject *EmacsObject_quote(PyObject *self, void *closure)
+{
+    UNUSED(closure);
+    emacs_value val = ((EmacsObject *)self)->val;
+    emacs_value ret = em_cons(em__quote, em_cons(val, em__nil));
+    return EmacsObject__make(&EmacsObjectType, ret);
+}
+
+
+
 // Python type object
 
 #define METHOD(name, args)                                              \
@@ -534,6 +545,11 @@ static PyMethodDef EmacsObject_methods[] = {
 };
 
 #undef METHOD
+
+static PyGetSetDef EmacsObject_getset[] = {
+    {"quote", EmacsObject_quote, NULL, NULL, NULL},
+    {NULL},
+};
 
 static PyNumberMethods EmacsObject_NumMethods[] = {{
     EmacsObject_add,                  // nb_add
@@ -617,7 +633,7 @@ PyTypeObject EmacsObjectType = {
     0,                                // tp_internext
     EmacsObject_methods,              // tp_methods
     0,                                // tp_members
-    0,                                // tp_getset
+    EmacsObject_getset,               // tp_getset
     0,                                // tp_base
     0,                                // tp_dict
     0,                                // tp_descr_get

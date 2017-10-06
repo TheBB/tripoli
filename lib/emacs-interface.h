@@ -7,7 +7,8 @@
 
 // Internally used and persistent objects
 
-emacs_value em__nil, em__t, em__error, em__eval, em__boundp, em__symbol_value;
+emacs_value em__nil, em__t, em__error, em__eval, em__boundp, em__symbol_value,
+    em__quote;
 emacs_value em__cons, em__setcar, em__setcdr, em__vector, em__car, em__cdr;
 emacs_value em__length, em__aref, em__arrayp;
 emacs_value em__format, em__list, em__symbol_name, em__type_of;
