@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from collections.abc import MutableMapping
 
 from tripoli.util import PlaceOrSymbol, coerce
@@ -10,15 +11,16 @@ _cadr = intern('cadr')
 _cddr = intern('cddr')
 _setcar = intern('setcar')
 _setcdr = intern('setcdr')
-_symbolp = intern('symbolp')
+_keywordp = intern('keywordp')
 
 
 def _colonify(key):
-    if str(key).startswith(':'):
-        if _symbolp(key):
-            return key
+    if _keywordp(key):
+        return key
+    key = str(key)
+    if key.startswith(':'):
         return intern(key)
-    return intern(':' + str(key))
+    return intern(':' + key)
 
 
 class PList(PlaceOrSymbol, MutableMapping):
